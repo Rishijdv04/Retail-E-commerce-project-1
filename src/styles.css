@@ -6,16 +6,16 @@
 
   --bg: #f8fafc;
   --surface: #ffffff;
-  --surface2: #f1f5f9;
+  --surface2: #f4f7fb;
 
-  --text: #0f172a;
+  --text: #111827;
   --muted: #64748b;
   --line: #e2e8f0;
 
-  --green: #2563eb;
-  --green-dark: #1e3a8a;
+  --green: #1769ff;
+  --green-dark: #0f5be7;
 
-  --shadow: 0 14px 45px rgba(15, 23, 42, 0.08);
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
 * {
@@ -47,7 +47,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {
-    outline: 2px solid #8fc94c;
+    outline: 2px solid #1769ff;
     outline-offset: 3px
 }
 
@@ -57,7 +57,7 @@ select:focus-visible {
 }
 
 .topline {
-    background: #1e3a8a;
+    background: #1769ff;
     color: #ffffff;
     text-align: center;
     font-size: 12px;
@@ -66,7 +66,7 @@ select:focus-visible {
 }
 
 .topline strong {
-  color: #bfdbfe;
+  color: #ffffff;
 }
 header {
     background: var(--surface);
@@ -98,7 +98,7 @@ header {
 }
 
 .brand>span:last-child {
-    color: light-dark(#6b9f31, #c7f581);
+    color: #1769ff;
     margin-left: -8px
 }
 
@@ -107,7 +107,7 @@ header {
     height: 33px;
     border-radius: 11px;
     background: var(--green);
-    color: #17221b;
+    color: #ffffff;
     display: grid;
     place-items: center;
     font-size: 20px;
@@ -132,7 +132,7 @@ header {
 
 .navlinks a:hover,
 .footer-links a:hover {
-    color: var(--text)
+    color: #1769ff
 }
 
 .search {
@@ -153,7 +153,7 @@ header {
 
 .search input {
     width: 100%;
-    background: var(--surface2);
+    background: #f4f7fb;
     border: 1px solid transparent;
     border-radius: 12px;
     padding: 12px 15px 12px 41px;
@@ -163,7 +163,7 @@ header {
 }
 
 .search input:focus {
-    border-color: #9ed95c
+    border-color: #1769ff
 }
 
 .nav-actions {
@@ -185,7 +185,7 @@ header {
 }
 
 .icon-btn.selected {
-    color: #e15b69
+    color: #ef4444
 }
 
 .cart-count {
@@ -193,7 +193,7 @@ header {
     right: -4px;
     top: -5px;
     background: var(--green);
-    color: #17221b;
+    color: #ffffff;
     font-size: 10px;
     font-weight: 900;
     border-radius: 50%;
@@ -208,7 +208,7 @@ header {
 .primary-btn {
     border: 0;
     background: var(--green);
-    color: #1b2b12;
+    color: #ffffff;
     padding: 12px 17px;
     border-radius: 12px;
     font-weight: 800;
@@ -217,6 +217,13 @@ header {
     align-items: center;
     justify-content: center;
     gap: 7px
+}
+
+.sell-btn:hover,
+.primary-btn:hover,
+.add-btn:hover,
+.checkout-btn:hover {
+    background: var(--green-dark)
 }
 
 .mobile-menu {
@@ -235,13 +242,14 @@ header {
 }
 
 .hero-card {
-    background: #1e3a8a;
-    color: #f6f8f3;
+    background: linear-gradient(135deg, #ffffff 0%, #f4f9ff 45%, #eaf4ff 100%);
+    color: #111827;
     border-radius: 25px;
     min-height: 370px;
     display: grid;
     grid-template-columns: 1.05fr .95fr;
-    overflow: hidden
+    overflow: hidden;
+    box-shadow: 0 0 0 1px #e2e8f0, 0 10px 30px rgba(15, 23, 42, 0.06)
 }
 
 .hero-copy {
@@ -281,7 +289,7 @@ h1 span {
 }
 
 .hero-copy p {
-    color: #c1cbc0;
+    color: #64748b;
     line-height: 1.7;
     font-size: 14px;
     max-width: 410px;
@@ -295,13 +303,17 @@ h1 span {
 }
 
 .secondary-btn {
-    border: 1px solid #516052;
-    background: transparent;
-    color: #f7f8f5;
+    border: 1px solid #1769ff;
+    background: #ffffff;
+    color: #1769ff;
     border-radius: 12px;
     padding: 12px 17px;
     font-weight: 700;
     font-size: 13px
+}
+
+.secondary-btn:hover {
+    background: #eaf4ff
 }
 
 .hero-proof {
@@ -309,12 +321,12 @@ h1 span {
     align-items: center;
     gap: 10px;
     margin-top: 28px;
-    color: #bdc7bb;
+    color: #64748b;
     font-size: 11px
 }
 
 .hero-proof b {
-    color: #f5f7f0
+    color: #111827
 }
 
 .avatars {
@@ -324,7 +336,7 @@ h1 span {
 .avatars span {
     width: 24px;
     height: 24px;
-    border: 2px solid #17221b;
+    border: 2px solid #ffffff;
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -339,7 +351,7 @@ h1 span {
 }
 
 .avatars span:last-child {
-    background: #b4cc8a
+    background: #f3c9a0
 }
 
 .hero-art {
@@ -351,9 +363,9 @@ h1 span {
 
   background: radial-gradient(
     ellipse at 56% 46%,
-    #60a5fa 0,
-    #2563eb 37%,
-    #1e3a8a 70%
+    #ffffff 0,
+    #f4f9ff 40%,
+    #eaf4ff 75%
   );
 }
 
@@ -361,16 +373,16 @@ h1 span {
     position: absolute;
     width: 300px;
     height: 300px;
-    border: 1px solid #53674c;
+    border: 1px solid #c7dcff;
     border-radius: 50%;
-    opacity: .65
+    opacity: .8
 }
 
 .orbit:before,
 .orbit:after {
     content: '';
     position: absolute;
-    border: 1px solid #53674c;
+    border: 1px solid #c7dcff;
     border-radius: 50%;
     inset: 27px
 }
@@ -391,9 +403,9 @@ h1 span {
     width: 165px;
     height: 185px;
     border-radius: 22px 22px 32px 32px;
-    background: linear-gradient(140deg, #93c5fd, #2563eb);
+    background: linear-gradient(140deg, #5a9bff, #1769ff);
     transform: rotate(-9deg);
-    box-shadow: 24px 28px 35px #0c160c70;
+    box-shadow: 24px 28px 35px rgba(23, 105, 255, 0.22);
     position: relative;
     z-index: 2
 }
@@ -403,7 +415,7 @@ h1 span {
     position: absolute;
     width: 65px;
     height: 44px;
-    border: 8px solid #60a5fa;
+    border: 8px solid #5a9bff;
     border-bottom: 0;
     border-radius: 35px 35px 0 0;
     top: -39px;
@@ -431,7 +443,7 @@ h1 span {
     right: 14px;
     top: 39px;
     transform: rotate(16deg);
-    box-shadow: 0 18px 30px #0c160c66;
+    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.16);
     display: grid;
     place-items: center;
     color: #7c3d2a;
@@ -447,7 +459,7 @@ h1 span {
     border-radius: 50% 22% 25% 28%;
     background: linear-gradient(160deg, #f5f0e4, #b8c5c0);
     transform: rotate(-17deg);
-    box-shadow: 0 15px 20px #0c160c66;
+    box-shadow: 0 15px 20px rgba(15, 23, 42, 0.16);
     z-index: 3
 }
 
@@ -465,13 +477,13 @@ h1 span {
 
 .float-card {
     position: absolute;
-    border: 1px solid #4a5a48;
-    background: #27382b;
-    color: #f3f7ee;
+    border: 1px solid #d6e7ff;
+    background: #ffffff;
+    color: #111827;
     border-radius: 13px;
     padding: 11px 13px;
     font-size: 11px;
-    box-shadow: 0 10px 30px #10171066
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08)
 }
 
 .float-card b {
@@ -513,12 +525,16 @@ h1 span {
 .text-link {
     border: 0;
     background: transparent;
-    color: light-dark(#5c8c27, #c7f581);
+    color: #1769ff;
     font-size: 12px;
     font-weight: 800;
     display: flex;
     align-items: center;
     gap: 5px
+}
+
+.text-link:hover {
+    color: #0f5be7
 }
 
 .categories {
@@ -539,9 +555,9 @@ h1 span {
 
 .category:hover,
 .category.active {
-    border-color: #9ed95c;
+    border-color: #1769ff;
     transform: translateY(-2px);
-    box-shadow: 0 8px 22px #9ed95c16
+    box-shadow: 0 8px 22px rgba(23, 105, 255, 0.10)
 }
 
 .emoji {
@@ -552,7 +568,7 @@ h1 span {
     place-items: center;
     border-radius: 17px;
     font-size: 28px;
-    background: var(--surface2)
+    background: #f4f9ff
 }
 
 .category strong {
@@ -576,7 +592,7 @@ h1 span {
 }
 
 .spark {
-    color: #8cbf4b
+    color: #ff8a00
 }
 
 .toolbar {
@@ -596,10 +612,15 @@ h1 span {
     font-size: 12px
 }
 
+.filter-btn:hover {
+    border-color: #1769ff;
+    color: #1769ff
+}
+
 .filter-btn.active {
     background: var(--green);
     border-color: var(--green);
-    color: #1b2b12;
+    color: #ffffff;
     font-weight: 800
 }
 
@@ -654,7 +675,7 @@ h1 span {
     display: grid;
     place-items: center;
     overflow: hidden;
-    background: var(--surface2)
+    background: #f4f9ff
 }
 
 .product-visual:before {
@@ -663,7 +684,7 @@ h1 span {
     width: 170px;
     height: 170px;
     border-radius: 50%;
-    background: var(--glow, #d8e8d0);
+    background: var(--glow, #eaf4ff);
     opacity: .75;
     filter: blur(1px)
 }
@@ -672,7 +693,7 @@ h1 span {
     position: relative;
     z-index: 1;
     font-size: 77px;
-    filter: drop-shadow(0 12px 10px #0002);
+    filter: drop-shadow(0 12px 10px rgba(15, 23, 42, 0.13));
     transform: rotate(-7deg);
     transition: transform .2s
 }
@@ -686,8 +707,9 @@ h1 span {
     left: 12px;
     top: 12px;
     z-index: 2;
-    background: var(--surface);
-    border: 1px solid var(--line);
+    background: #eaf4ff;
+    color: #1769ff;
+    border: 1px solid #d6e7ff;
     border-radius: 7px;
     padding: 5px 7px;
     font-size: 9px;
@@ -710,7 +732,7 @@ h1 span {
 }
 
 .wish.liked {
-    color: #e15b69
+    color: #ef4444
 }
 
 .product-info {
@@ -738,7 +760,7 @@ h1 span {
 }
 
 .rating>span:first-child {
-    color: #dc9b2c;
+    color: #f59e0b;
     letter-spacing: 1px
 }
 
@@ -773,7 +795,7 @@ h1 span {
 .add-btn {
     border: 0;
     background: var(--green);
-    color: #1b2b12;
+    color: #ffffff;
     border-radius: 9px;
     width: 34px;
     height: 34px;
@@ -784,8 +806,8 @@ h1 span {
 
 .seller-banner {
     margin: 39px 0 48px;
-    background: #e8f6d9;
-    color: #1a2c12;
+    background: #eaf4ff;
+    color: #111827;
     border-radius: 20px;
     padding: 28px 34px;
     display: flex;
@@ -803,7 +825,7 @@ h1 span {
     top: -53px;
     font-size: 210px;
     font-weight: 900;
-    color: #d4edb9;
+    color: #d6e7ff;
     line-height: 1
 }
 
@@ -817,7 +839,7 @@ h1 span {
 
 .seller-banner p {
     font-size: 12px;
-    color: #56684b;
+    color: #64748b;
     margin: 0;
     position: relative;
     z-index: 1;
@@ -827,8 +849,8 @@ h1 span {
 .seller-banner button {
     position: relative;
     z-index: 2;
-    background: #1c2d17;
-    color: #f3f9ed;
+    background: #ff8a00;
+    color: #ffffff;
     border: 0;
     border-radius: 11px;
     padding: 13px 17px;
@@ -838,6 +860,10 @@ h1 span {
     display: flex;
     align-items: center;
     gap: 7px
+}
+
+.seller-banner button:hover {
+    background: #e67a00
 }
 
 footer {
@@ -900,7 +926,7 @@ footer {
 .overlay {
     position: fixed;
     inset: 0;
-    background: #0008;
+    background: rgba(15, 23, 42, 0.45);
     z-index: 50;
     display: flex;
     justify-content: flex-end
@@ -913,7 +939,7 @@ footer {
     padding: 24px;
     display: flex;
     flex-direction: column;
-    box-shadow: -20px 0 50px #0002
+    box-shadow: -20px 0 50px rgba(15, 23, 42, 0.12)
 }
 
 .drawer-head {
@@ -965,7 +991,7 @@ footer {
 .cart-thumb {
     height: 56px;
     border-radius: 12px;
-    background: var(--surface2);
+    background: #f4f9ff;
     display: grid;
     place-items: center;
     font-size: 27px
@@ -1034,7 +1060,7 @@ footer {
     width: 100%;
     border: 0;
     background: var(--green);
-    color: #1b2b12;
+    color: #ffffff;
     padding: 14px;
     border-radius: 12px;
     font-weight: 850;
@@ -1081,7 +1107,7 @@ footer {
     border: 1px solid var(--line);
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 20px 70px #0004
+    box-shadow: 0 20px 70px rgba(15, 23, 42, 0.18)
 }
 
 .modal-head {
@@ -1121,6 +1147,11 @@ footer {
     outline: none
 }
 
+.modal input:focus,
+.modal select:focus {
+    border-color: #1769ff
+}
+
 .modal-actions {
     display: flex;
     gap: 10px;
@@ -1147,8 +1178,8 @@ footer {
     transform: translate(-50%, 20px);
     opacity: 0;
     pointer-events: none;
-    background: #17221b;
-    color: #f7f8f3;
+    background: #111827;
+    color: #ffffff;
     padding: 13px 18px;
     border-radius: 12px;
     font-size: 12px;
