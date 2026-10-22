@@ -12,9 +12,11 @@ export const products = [
     reviews: 124,
     status: "Popular",
     emoji: "🎧",
+    image: "/products/headphones.jpg",
     glow: "#DBEAFE",
     tag: "BESTSELLER",
   },
+
   {
     id: 2,
     name: "Everyday Court Sneakers",
@@ -26,9 +28,11 @@ export const products = [
     reviews: 86,
     status: "Popular",
     emoji: "👟",
+    image: "/products/sneakers.jpg",
     glow: "#E0E7FF",
     tag: "-24%",
   },
+
   {
     id: 3,
     name: "Cloud Ceramic Mug Set",
@@ -40,9 +44,11 @@ export const products = [
     reviews: 57,
     status: "New",
     emoji: "☕",
+    image: "/products/mug.jpg",
     glow: "#E0F2FE",
     tag: "NEW IN",
   },
+
   {
     id: 4,
     name: "Glow Daily Face Serum",
@@ -54,9 +60,11 @@ export const products = [
     reviews: 203,
     status: "Popular",
     emoji: "🧴",
+    image: "/products/serum.jpg",
     glow: "#FCE7F3",
     tag: "TOP RATED",
   },
+
   {
     id: 5,
     name: "Minimal Everyday Backpack",
@@ -68,9 +76,11 @@ export const products = [
     reviews: 91,
     status: "New",
     emoji: "🎒",
+    image: "/products/backpack.jpg",
     glow: "#EDE9FE",
     tag: "NEW IN",
   },
+
   {
     id: 6,
     name: "Smart LED Desk Lamp",
@@ -82,9 +92,11 @@ export const products = [
     reviews: 44,
     status: "Popular",
     emoji: "💡",
+    image: "/products/lamp.jpg",
     glow: "#FEF3C7",
     tag: "-23%",
   },
+
   {
     id: 7,
     name: "Pocket Bluetooth Speaker",
@@ -96,9 +108,11 @@ export const products = [
     reviews: 78,
     status: "New",
     emoji: "🔊",
+    image: "/products/speaker.jpg",
     glow: "#CFFAFE",
     tag: "JUST DROPPED",
   },
+
   {
     id: 8,
     name: "Classic Everyday Watch",
@@ -110,9 +124,11 @@ export const products = [
     reviews: 112,
     status: "Popular",
     emoji: "⌚",
+    image: "/products/watch.jpg",
     glow: "#E0E7FF",
     tag: "FAN FAVOURITE",
   },
+
   {
     id: 9,
     name: "Botanical Soy Candle",
@@ -124,9 +140,11 @@ export const products = [
     reviews: 66,
     status: "New",
     emoji: "🕯️",
+    image: "/products/candle.jpg",
     glow: "#F3E8FF",
     tag: "NEW IN",
   },
+
   {
     id: 10,
     name: "Everyday Tote Bag",
@@ -138,9 +156,11 @@ export const products = [
     reviews: 143,
     status: "Popular",
     emoji: "👜",
+    image: "/products/tote.jpg",
     glow: "#FCE7F3",
     tag: "-25%",
   },
+
   {
     id: 11,
     name: "Hydration Steel Bottle",
@@ -152,9 +172,11 @@ export const products = [
     reviews: 188,
     status: "Popular",
     emoji: "🧃",
+    image: "/products/bottle.jpg",
     glow: "#DBEAFE",
     tag: "DAILY PICK",
   },
+
   {
     id: 12,
     name: "Compact Mechanical Keyboard",
@@ -166,6 +188,7 @@ export const products = [
     reviews: 39,
     status: "New",
     emoji: "⌨️",
+    image: "/products/keyboard.jpg",
     glow: "#EDE9FE",
     tag: "NEW IN",
   },
@@ -178,30 +201,35 @@ export const categories = [
     detail: "All the good stuff",
     emoji: "✦",
   },
+
   {
     id: "Tech",
     label: "Tech & gadgets",
     detail: "Smart little upgrades",
     emoji: "🎧",
   },
+
   {
     id: "Fashion",
     label: "Fashion",
     detail: "Wear your thing",
     emoji: "👟",
   },
+
   {
     id: "Home",
     label: "Home & living",
     detail: "Make it yours",
     emoji: "🪴",
   },
+
   {
     id: "Beauty",
     label: "Beauty",
     detail: "Your daily ritual",
     emoji: "🧴",
   },
+
   {
     id: "Lifestyle",
     label: "Lifestyle",
