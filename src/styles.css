@@ -1466,3 +1466,415 @@ footer {
         transition: none !important
     }
 }
+
+
+
+/* =========================================================
+   SWIFTCART — BEAUTY PRODUCT SPOTLIGHT
+   ========================================================= */
+
+.product-spotlight {
+  padding-top: 46px;
+  padding-bottom: 72px;
+}
+
+.spotlight-card {
+  display: grid;
+  grid-template-columns: 1.25fr 0.68fr 1.25fr;
+  min-height: 390px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
+}
+
+
+/* =========================================================
+   LEFT — MODEL VIDEO
+   ========================================================= */
+
+.spotlight-video {
+  position: relative;
+  min-height: 390px;
+  overflow: hidden;
+  background: #0b1117;
+}
+
+.spotlight-video video {
+  width: 100%;
+  height: 100%;
+  min-height: 390px;
+  display: block;
+  object-fit: cover;
+}
+
+
+/* Small beauty label on video */
+
+.video-label {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 2;
+
+  padding: 7px 10px;
+
+  border-radius: 4px;
+
+  background: rgba(255, 255, 255, 0.92);
+  color: #111827;
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+
+  backdrop-filter: blur(8px);
+}
+
+
+/* =========================================================
+   CENTER — PRODUCT IMAGE
+   ========================================================= */
+
+.spotlight-product-image {
+  position: relative;
+
+  min-height: 390px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px 18px;
+
+  overflow: hidden;
+
+  background: #f7f7f7;
+}
+
+.spotlight-product-image img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  transition: transform 0.4s ease;
+}
+
+.spotlight-product-image:hover img {
+  transform: scale(1.04);
+}
+
+
+/* Beauty Pick badge */
+
+.spotlight-tag {
+  position: absolute;
+
+  top: 16px;
+  left: 15px;
+
+  z-index: 3;
+
+  padding: 6px 9px;
+
+  border-radius: 4px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.7px;
+}
+
+
+/* =========================================================
+   RIGHT — PRODUCT DETAILS
+   ========================================================= */
+
+.spotlight-details {
+  min-height: 390px;
+
+  padding: 27px 30px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background: #ffffff;
+}
+
+.sponsored-label {
+  margin-bottom: 7px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.sponsored-label span {
+  font-size: 11px;
+}
+
+
+.spotlight-details h2 {
+  margin: 0 0 11px;
+
+  color: #111827;
+
+  font-size: 23px;
+  line-height: 1.28;
+  font-weight: 600;
+
+  letter-spacing: -0.45px;
+}
+
+
+/* =========================================================
+   RATING
+   ========================================================= */
+
+.spotlight-rating {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 13px;
+
+  font-size: 13px;
+}
+
+.spotlight-rating strong {
+  color: #111827;
+}
+
+.spotlight-rating span {
+  color: #f59e0b;
+
+  letter-spacing: 1px;
+}
+
+.spotlight-rating a {
+  color: #2563eb;
+
+  text-decoration: none;
+}
+
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.spotlight-badge {
+  width: fit-content;
+
+  margin-bottom: 15px;
+
+  padding: 6px 9px;
+
+  border-radius: 3px;
+
+  background: #e11d48;
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   PRICE
+   ========================================================= */
+
+.spotlight-price {
+  display: flex;
+  align-items: baseline;
+
+  flex-wrap: wrap;
+
+  gap: 9px;
+
+  margin-bottom: 4px;
+}
+
+.spotlight-price span {
+  color: #111827;
+
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.spotlight-price del {
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.spotlight-price b {
+  color: #15803d;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   OFFER
+   ========================================================= */
+
+.spotlight-offer {
+  margin: 5px 0 12px;
+
+  color: #334155;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   DELIVERY
+   ========================================================= */
+
+.spotlight-delivery {
+  margin: 0 0 18px;
+
+  color: #334155;
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.spotlight-delivery strong {
+  color: #15803d;
+}
+
+
+/* =========================================================
+   ADD TO CART
+   ========================================================= */
+
+.spotlight-btn {
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  border: 0;
+  border-radius: 6px;
+
+  padding: 11px 19px;
+
+  background: #ff8900;
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.spotlight-btn:hover {
+  transform: translateY(-1px);
+
+  background: #f57c00;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 950px) {
+
+  .spotlight-card {
+    grid-template-columns: 1fr 0.75fr;
+  }
+
+  .spotlight-video {
+    min-height: 340px;
+  }
+
+  .spotlight-video video {
+    min-height: 340px;
+  }
+
+  .spotlight-product-image {
+    min-height: 340px;
+  }
+
+  .spotlight-details {
+    grid-column: 1 / -1;
+
+    min-height: auto;
+
+    padding: 25px 30px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+  .product-spotlight {
+    padding-top: 35px;
+    padding-bottom: 45px;
+  }
+
+  .spotlight-card {
+    grid-template-columns: 1fr;
+
+    border-radius: 10px;
+  }
+
+  .spotlight-video {
+    min-height: 270px;
+  }
+
+  .spotlight-video video {
+    min-height: 270px;
+  }
+
+  .spotlight-product-image {
+    min-height: 310px;
+  }
+
+  .spotlight-details {
+    grid-column: auto;
+
+    min-height: auto;
+
+    padding: 24px 20px;
+  }
+
+  .spotlight-details h2 {
+    font-size: 21px;
+  }
+
+  .spotlight-price span {
+    font-size: 28px;
+  }
+
+  .spotlight-btn {
+    width: 100%;
+  }
+
+  .video-label {
+    top: 13px;
+    left: 13px;
+  }
+}
