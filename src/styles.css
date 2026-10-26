@@ -2098,3 +2098,504 @@ header {
   background: #252c52;
 
 }
+
+
+/* ==========================================
+   SWIFTCART — PREMIUM UI ENHANCEMENTS
+   Append at the end of your CSS file
+   ========================================== */
+
+/* 1. Global polish */
+:root {
+  --shadow-card: 0 8px 24px rgba(41, 52, 108, 0.07);
+  --shadow-hover: 0 18px 38px rgba(66, 80, 158, 0.14);
+  --accent-soft: #f0efff;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #dcdfff;
+  color: #283a9a;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(82, 103, 220, 0.4);
+  outline-offset: 3px;
+}
+
+/* 2. Sticky navigation refinement */
+header {
+  transition: box-shadow 0.25s ease;
+}
+
+.nav {
+  min-height: 74px;
+}
+
+.brand {
+  transition: opacity 0.2s ease;
+}
+
+.brand:hover {
+  opacity: 0.82;
+}
+
+.navlinks a {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.navlinks a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -7px;
+  height: 2px;
+  border-radius: 99px;
+  background: var(--green);
+  transition: right 0.22s ease;
+}
+
+.navlinks a:hover::after {
+  right: 0;
+}
+
+.search input {
+  border: 1px solid transparent;
+  transition: background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.search input:focus {
+  background: #fff;
+  border-color: #a5aff5;
+  box-shadow: 0 0 0 4px rgba(82, 103, 220, 0.09);
+}
+
+/* 3. Buttons — smoother interactions */
+.primary-btn,
+.sell-btn,
+.secondary-btn,
+.add-btn,
+.checkout-btn,
+.spotlight-btn,
+.seller-banner button,
+.outline-btn {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.primary-btn:hover,
+.sell-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(82, 103, 220, 0.22);
+}
+
+.secondary-btn:hover,
+.outline-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--green);
+}
+
+.add-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 5px 12px rgba(82, 103, 220, 0.24);
+}
+
+.add-btn:active,
+.primary-btn:active,
+.sell-btn:active {
+  transform: scale(0.97);
+}
+
+/* 4. Hero — richer depth */
+.hero-card {
+  position: relative;
+  border: 1px solid rgba(225, 229, 242, 0.9);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s ease;
+}
+
+.hero-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.hero-copy h1 {
+  line-height: 1.06;
+  letter-spacing: -2.5px;
+}
+
+.hero-copy h1 span {
+  background: linear-gradient(100deg, #5267dc, #8c73e8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-art {
+  overflow: hidden;
+}
+
+.hero-art::before {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(125, 139, 255, 0.16),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.bag {
+  transition: transform 0.35s ease;
+}
+
+.hero-card:hover .bag {
+  transform: rotate(-5deg) translateY(-5px);
+}
+
+.float-card {
+  border-radius: 15px;
+  box-shadow: 0 12px 30px rgba(41, 52, 108, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+/* 5. Category cards */
+.category {
+  position: relative;
+  overflow: hidden;
+  border-radius: 19px;
+  box-shadow: 0 3px 12px rgba(41, 52, 108, 0.025);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.category:hover {
+  transform: translateY(-5px);
+  background: linear-gradient(145deg, #fff, #f6f5ff);
+  border-color: #c6cbff;
+  box-shadow: var(--shadow-hover);
+}
+
+.category.active {
+  background: linear-gradient(145deg, #fff, #f2f0ff);
+  border-color: var(--green);
+  box-shadow: 0 7px 20px rgba(82, 103, 220, 0.11);
+}
+
+.emoji {
+  transition: transform 0.25s ease;
+}
+
+.category:hover .emoji {
+  transform: translateY(-2px) scale(1.06);
+}
+
+/* 6. Product cards */
+.product-card {
+  border-radius: 19px;
+  border-color: #e6e8f4;
+  box-shadow: 0 3px 14px rgba(41, 52, 108, 0.035);
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  border-color: #d0d4fa;
+  box-shadow: var(--shadow-hover);
+}
+
+.product-visual {
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    #ffffff 0%,
+    #f5f5ff 75%,
+    #eeefff 100%
+  );
+}
+
+.product-art {
+  padding: 16px;
+}
+
+.product-art img {
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.product-card:hover .product-art img {
+  transform: scale(1.075);
+}
+
+.product-tag {
+  border-radius: 8px;
+  padding: 6px 9px;
+  letter-spacing: 0.02em;
+  background: #eeedff;
+  border-color: #dcd9ff;
+  color: #4859bd;
+}
+
+.product-info {
+  background: linear-gradient(180deg, #fff, #fcfcff);
+  border-top: 1px solid #f0f0f8;
+  padding: 16px;
+}
+
+.product-name {
+  line-height: 1.5;
+}
+
+.vendor {
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-size: 9px;
+}
+
+.price {
+  color: #28366f;
+}
+
+.old-price {
+  color: #8b91a6;
+}
+
+.rating > span:first-child {
+  color: #f5a623;
+}
+
+/* Wishlist heart */
+.wish {
+  box-shadow: 0 3px 10px rgba(23, 33, 60, 0.08);
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.wish:hover {
+  transform: scale(1.1);
+  background: #fff0f4;
+  color: #e74772;
+}
+
+.wish.liked {
+  background: #fff0f4;
+  color: #e74772;
+}
+
+/* 7. Shop filters and sorting */
+.filter-btn,
+.sort-wrap {
+  border-radius: 11px;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.filter-btn.active {
+  box-shadow: 0 4px 12px rgba(82, 103, 220, 0.2);
+}
+
+.sort-wrap:focus-within {
+  border-color: #a5aff5;
+  box-shadow: 0 0 0 3px rgba(82, 103, 220, 0.08);
+}
+
+/* 8. Seller banner */
+.seller-banner {
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(148, 139, 255, 0.2),
+      transparent 35%
+    ),
+    linear-gradient(120deg, #f1efff, #f8f7ff 65%, #eeefff);
+  border: 1px solid #e3e0ff;
+  box-shadow: var(--shadow-card);
+  border-radius: 23px;
+}
+
+.seller-banner button {
+  box-shadow: 0 5px 14px rgba(255, 138, 0, 0.17);
+}
+
+.seller-banner button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(255, 138, 0, 0.25);
+}
+
+/* 9. Beauty product spotlight */
+.spotlight-card {
+  border-radius: 22px;
+  border-color: #e6e4f5;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s ease;
+}
+
+.spotlight-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.spotlight-video,
+.spotlight-product-image {
+  background: #f4f2ff;
+}
+
+.spotlight-product-image {
+  background: radial-gradient(
+    ellipse at center,
+    #fff 0%,
+    #f4f2ff 72%,
+    #eceaff 100%
+  );
+}
+
+.spotlight-details {
+  background: linear-gradient(145deg, #fff, #fbfaff);
+}
+
+.spotlight-btn {
+  border-radius: 11px;
+  box-shadow: 0 5px 14px rgba(255, 137, 0, 0.15);
+}
+
+.spotlight-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(255, 137, 0, 0.24);
+}
+
+/* 10. Cart drawer and seller modal */
+.cart-drawer {
+  box-shadow: -18px 0 55px rgba(32, 39, 91, 0.14);
+}
+
+.cart-thumb {
+  background: linear-gradient(135deg, #f0efff, #faf9ff);
+  border: 1px solid #e8e5ff;
+}
+
+.qty button:hover {
+  border-color: var(--green);
+  background: var(--accent-soft);
+}
+
+.modal {
+  border-radius: 23px;
+  box-shadow: 0 24px 80px rgba(32, 39, 91, 0.2);
+}
+
+.modal input:focus,
+.modal select:focus {
+  border-color: #929df1;
+  box-shadow: 0 0 0 4px rgba(82, 103, 220, 0.09);
+}
+
+/* 11. Footer */
+footer {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.footer-links a {
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--green);
+}
+
+/* 12. Responsive refinements */
+@media (max-width: 950px) {
+  .hero-card:hover,
+  .product-card:hover,
+  .category:hover {
+    transform: none;
+  }
+
+  .product-card:hover {
+    box-shadow: var(--shadow-card);
+  }
+}
+
+@media (max-width: 680px) {
+  .hero-copy h1 {
+    font-size: clamp(35px, 9vw, 43px);
+    line-height: 1.08;
+  }
+
+  .hero-card {
+    border-radius: 21px;
+  }
+
+  .section-head h2 {
+    font-size: 22px;
+  }
+
+  .product-card {
+    border-radius: 15px;
+  }
+
+  .product-visual,
+  .product-art {
+    height: 165px;
+  }
+
+  .product-art {
+    padding: 10px;
+  }
+
+  .product-info {
+    padding: 12px;
+  }
+
+  .seller-banner {
+    border-radius: 19px;
+  }
+
+  .spotlight-card {
+    border-radius: 18px;
+  }
+
+  .modal {
+    border-radius: 19px;
+  }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
