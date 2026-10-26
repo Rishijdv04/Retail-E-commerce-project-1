@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import {
   Search,
@@ -654,7 +653,7 @@ export default function App() {
             <div className="spotlight-video">
 
               <video
-                src="/videos/makeup-model.mp4"
+                src="/video/makeup-model.mp4"
                 autoPlay
                 muted
                 loop
@@ -677,7 +676,7 @@ export default function App() {
               </span>
 
               <img
-                src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85"
+                src="https://m.media-amazon.com/images/I/61Ls4tW2emL._AC_UL480_FMwebp_QL65_.jpg"
                 alt="Makeup beauty products"
               />
 
