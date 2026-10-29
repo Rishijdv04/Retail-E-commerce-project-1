@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
+import { useAuth } from './store/authStore';
 import {
   Search,
   Heart,
   ShoppingBag,
+  User,
   Menu,
   X,
   ArrowUpRight,
@@ -27,6 +30,13 @@ export default function App() {
   const [showSeller, setShowSeller] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [toast, setToast] = useState('');
+
+  // ADDED: logged-in user (null when signed out) and account link helpers
+  const user = useAuth((s) => s.user);
+  const accountPath = user?.role === 'admin' ? '/admin' : '/account';
+  const accountLabel = user
+    ? `My account (${user.name.split(' ')[0]})`
+    : 'Sign in';
 
   const [sellerForm, setSellerForm] = useState({
     brand: '',
@@ -182,6 +192,12 @@ export default function App() {
             <a href="#shop">Shop all</a>
             <a href="#categories">Categories</a>
             <a href="#seller">Sell on SwiftCart</a>
+
+            {/* ADDED: account links */}
+            <Link to={accountPath}>{accountLabel}</Link>
+            {user?.role === 'admin' && (
+              <Link to="/admin">Admin</Link>
+            )}
           </div>
 
           <label className="search">
@@ -213,6 +229,16 @@ export default function App() {
             >
               <Heart size={18} />
             </button>
+
+            {/* ADDED: account icon (also visible on mobile) */}
+            <Link
+              className="icon-btn"
+              to={user ? accountPath : '/login'}
+              title={accountLabel}
+              aria-label={accountLabel}
+            >
+              <User size={18} />
+            </Link>
 
             <button
               className="icon-btn cart-icon"
@@ -783,6 +809,11 @@ export default function App() {
               Become a seller
             </a>
 
+            {/* ADDED: account link */}
+            <Link to={user ? accountPath : '/login'}>
+              {user ? 'My account' : 'Sign in'}
+            </Link>
+
             <a
               href="#home"
               onClick={(e) => {
@@ -1143,4 +1174,3 @@ export default function App() {
     </div>
   );
 }
-
