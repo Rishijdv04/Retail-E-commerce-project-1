@@ -1,340 +1,421 @@
-# 🛒 SwiftCart Marketplace
+# 🛍️ SwiftCart — Multi-Vendor E-Commerce Marketplace
 
-SwiftCart is a modern and responsive **multi-vendor e-commerce marketplace frontend** built using **React.js and Vite**.
+<p align="center">
+  <strong>A modern marketplace experience built with React and Vite.</strong>
+  <br />
+  Discover products, explore sellers, manage your shopping cart, and experience a growing multi-vendor commerce platform.
+</p>
 
-The project provides a clean shopping experience where customers can explore products, search and filter items, manage their wishlist and cart, and preview seller-related functionality.
-
-> **Current Status:** Frontend Prototype  
-> Backend integration, authentication, database, payments, and vendor/admin dashboards are planned for future development.
-
----
-
-## ✨ Features
-
-### 🛍️ Customer Experience
-
-- Browse products from multiple sellers
-- Search products by name, seller, or category
-- Filter products by category
-- Popular and New product filters
-- Sort products by price and rating
-- Responsive product cards
-- Wishlist management
-- Add products to cart
-- Increase or decrease product quantity
-- Automatic cart subtotal calculation
-- Shipping and total price calculation
-- Toast notifications for user actions
-
-### ❤️ Wishlist
-
-- Add or remove products from wishlist
-- View wishlist products separately
-- Quick wishlist toggle from product cards
-
-### 🛒 Shopping Cart
-
-- Add products to cart
-- Remove products from cart
-- Update product quantities
-- Calculate subtotal
-- Calculate shipping charges
-- Calculate final order total
-
-### 🏪 Seller Preview
-
-- Seller application form
-- Seller onboarding UI preview
-- Marketplace seller-focused interface
-
-> The seller form is currently for demonstration purposes only and does not submit data to a backend.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-Frontend-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/CSS3-Styling-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+</p>
 
 ---
 
-## 🛠️ Tech Stack
+## 📌 Overview
 
-| Technology | Purpose |
-|---|---|
-| React.js | Frontend UI |
-| Vite | Development and build tool |
-| JavaScript | Application logic |
-| CSS3 | Styling and responsive design |
-| React Hooks | State and UI management |
-| Local Demo Data | Product and category data |
+**SwiftCart** is a collaborative multi-vendor e-commerce marketplace project designed to provide a seamless shopping experience for customers while building the foundation for independent seller operations.
+
+The platform focuses on essential marketplace functionality, including product discovery, category-based browsing, search, sorting, wishlist management, shopping cart operations, and seller-related interfaces.
+
+The project is being developed incrementally, with a focus on clean UI, reusable components, responsive layouts, and scalable application architecture.
+
+### 🎯 Project Vision
+
+To develop a complete multi-vendor marketplace where:
+
+* Customers can discover and purchase products.
+* Vendors can manage their own products and orders.
+* Administrators can oversee marketplace operations.
+* Different user roles have access to their respective features.
+
+> **Development Status:** Frontend marketplace with authentication and role-oriented interface development in progress. Full production backend, database, payment processing, and order management are planned development areas.
 
 ---
 
-## 📁 Project Structure
+## ✨ Key Features
+
+### 🛒 Shopping Experience
+
+* Browse products from multiple sellers.
+* Search by product name, seller, or category.
+* Explore products using category filters.
+* Filter popular and newly added products.
+* Sort products by price and rating.
+* Responsive product cards and product sections.
+* Toast notifications for user interactions.
+
+### ❤️ Wishlist Management
+
+* Add products to wishlist.
+* Remove products from wishlist.
+* View shortlisted products separately.
+* Toggle wishlist directly from product cards.
+
+### 🧺 Shopping Cart
+
+* Add products to the shopping cart.
+* Increase or decrease product quantities.
+* Remove individual products.
+* Automatically calculate cart subtotal.
+* Calculate shipping charges.
+* Display the final estimated order total.
+
+### 🔐 Authentication & User Interface
+
+* Login and registration interfaces.
+* Authentication-related form validation.
+* Role-oriented protected route structure.
+* Customer profile interface.
+* Authentication service and state management structure.
+
+*Production-ready authentication requires a properly configured and secured backend.*
+
+### 🛡️ Admin Interface
+
+* Admin dashboard interface.
+* Separate admin route structure.
+* Foundation for marketplace administration.
+
+*Dashboard functionality and backend-powered administrative operations are under development.*
+
+### 🏪 Seller Experience
+
+* Seller application form.
+* Seller onboarding interface preview.
+* Marketplace-focused seller experience.
+
+*Seller application submission and vendor management require backend integration.*
+
+---
+
+## 🧰 Technology Stack
+
+| Technology        | Purpose                                  |
+| ----------------- | ---------------------------------------- |
+| React.js          | Component-based user interface           |
+| Vite              | Development server and build tooling     |
+| JavaScript (ES6+) | Application logic                        |
+| CSS3              | Responsive styling and layouts           |
+| React Hooks       | Component state and lifecycle management |
+| React Router      | Application navigation and routing       |
+| Zustand           | Client-side state management             |
+| React Hook Form   | Form handling                            |
+| Zod               | Form schema validation                   |
+| Local Demo Data   | Initial marketplace product data         |
+
+---
+
+## 🏗️ Application Structure
+
+The project follows a modular React application structure.
 
 ```text
-swiftcart-react/
+Retail-E-commerce-project-1/
+│
+├── public/
+│   ├── products/
+│   └── videos/
 │
 ├── src/
+│   │
+│   ├── components/
+│   │   └── auth/
+│   │       ├── Field.jsx
+│   │       └── RequireAuth.jsx
+│   │
 │   ├── data/
 │   │   └── products.js
 │   │
+│   ├── pages/
+│   │   ├── auth/
+│   │   │   ├── AuthPages.jsx
+│   │   │   └── schemas.js
+│   │   │
+│   │   ├── admin/
+│   │   │   └── AdminDashboard.jsx
+│   │   │
+│   │   └── ProfilePage.jsx
+│   │
+│   ├── services/
+│   │   └── authService.js
+│   │
+│   ├── store/
+│   │   └── authStore.js
+│   │
 │   ├── App.jsx
-│   ├── styles.css
-│   └── main.jsx
+│   ├── main.jsx
+│   └── styles.css
 │
 ├── index.html
 ├── package.json
+├── package-lock.json
 └── README.md
 ```
 
-### Important Files
+*Note: The structure represents the current application modules. Additional components and pages may be added as development progresses.*
 
-**`src/App.jsx`**
+### Core Modules
 
-Contains the main storefront UI and interactions, including:
-
-- Search
-- Category filters
-- Product sorting
-- Wishlist
-- Shopping cart
-- Seller application form
-
-**`src/styles.css`**
-
-Contains:
-
-- Marketplace theme
-- Colors
-- Product card styling
-- Hero section
-- Navigation
-- Responsive layouts
-- Mobile styling
-
-**`src/data/products.js`**
-
-Contains the demo marketplace data, including:
-
-- Product names
-- Prices
-- Sellers
-- Categories
-- Ratings
-- Tags
-- Product icons/emojis
-
-**`index.html`**
-
-Contains the page title and basic metadata.
+| Module               | Responsibility                                                        |
+| -------------------- | --------------------------------------------------------------------- |
+| `App.jsx`            | Main marketplace interface                                            |
+| `main.jsx`           | Application entry point and routing setup                             |
+| `products.js`        | Demo product information                                              |
+| `AuthPages.jsx`      | Login and registration interfaces                                     |
+| `RequireAuth.jsx`    | Protected route component                                             |
+| `AuthDashboard.jsx`  | Authentication-related functionality is organized across auth modules |
+| `AdminDashboard.jsx` | Admin dashboard interface                                             |
+| `ProfilePage.jsx`    | Customer profile interface                                            |
+| `authService.js`     | Authentication service layer                                          |
+| `authStore.js`       | Authentication state management                                       |
+| `schemas.js`         | Form validation schemas                                               |
+| `styles.css`         | Main marketplace styling                                              |
 
 ---
 
-## 🚀 Getting Started
+## ⚙️ Getting Started
+
+Follow these instructions to run SwiftCart locally.
 
 ### Prerequisites
 
-Make sure you have installed:
+Make sure you have the following installed:
 
-- Node.js `20.19+` or `22.12+`
-- npm
-- VS Code or another code editor
-- Git (recommended)
+* Node.js `20.19+` or `22.12+`
+* npm
+* Git
+* Visual Studio Code or another code editor
 
-Check your Node.js and npm versions:
+Verify your installation:
 
 ```bash
 node -v
 npm -v
+git --version
 ```
 
----
-
-## 💻 Run the Project Locally
-
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Rishijdv04/Retail-E-commerce-project-1.git
 ```
 
-### 2. Open the project folder
+### 2. Navigate to the Project
 
 ```bash
 cd Retail-E-commerce-project-1
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 4. Start the development server
+### 4. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-### 5. Open the application
+### 5. Open in Browser
 
-Vite will display a local development URL, usually:
+Vite will display the local development URL in your terminal.
+
+Usually:
 
 ```text
 http://localhost:5173
 ```
 
-Open it in your browser.
+---
+
+## 📱 Responsive Experience
+
+SwiftCart is designed with responsive layouts to support different screen sizes.
+
+| Device  | Design Support                                 |
+| ------- | ---------------------------------------------- |
+| Desktop | Full marketplace layout                        |
+| Laptop  | Optimized shopping interface                   |
+| Tablet  | Adaptive product grids                         |
+| Mobile  | Mobile-friendly navigation and product layouts |
+
+The interface uses responsive CSS layouts to improve usability across devices.
 
 ---
 
-## 📱 Responsive Design
+## 🔭 Development Roadmap
 
-SwiftCart is designed to work across different screen sizes, including:
+SwiftCart is being developed in phases to gradually evolve into a complete marketplace platform.
 
-- Desktop
-- Laptop
-- Tablet
-- Mobile
+### Phase 1 — Marketplace Frontend
 
-The interface automatically adjusts product grids, navigation, categories, and other components for smaller screens.
+* [x] Product listing interface
+* [x] Search and category filters
+* [x] Product sorting
+* [x] Wishlist interface
+* [x] Shopping cart
+* [x] Cart quantity management
+* [x] Seller application UI
 
----
+### Phase 2 — Authentication & User Management
 
-## ⚠️ Current Limitations
+* [x] Login and registration interfaces
+* [x] Authentication service structure
+* [x] Authentication state management structure
+* [x] Protected route structure
+* [x] Profile interface
+* [ ] Complete backend authentication integration
+* [ ] Secure session management
+* [ ] Role-based backend authorization
 
-SwiftCart is currently a **frontend-only prototype**.
+### Phase 3 — Vendor Management
 
-The current version does **not** include:
+* [ ] Vendor registration and approval
+* [ ] Vendor dashboard
+* [ ] Add, edit, and delete products
+* [ ] Product image uploads
+* [ ] Inventory management
+* [ ] Vendor-specific order management
 
-- Backend API
-- Database
-- Real user authentication
-- Admin authentication
-- Vendor authentication
-- Admin dashboard
-- Vendor dashboard
-- Product image uploads
-- Persistent cart storage
-- Real order processing
-- Payment gateway
-- Secure checkout
-- Backend inventory management
-- Vendor-wise order splitting
+### Phase 4 — Admin Management
 
-All products and categories currently use local demo data.
+* [x] Admin dashboard interface
+* [ ] Admin backend integration
+* [ ] Customer management
+* [ ] Vendor approval and management
+* [ ] Product and category management
+* [ ] Marketplace analytics
 
-The seller application and checkout interfaces are UI previews only.
+### Phase 5 — Orders & Payments
 
-> **Security Notice:** Do not collect or store real customer, authentication, or payment information until a secure backend and database are implemented.
+* [ ] Secure checkout
+* [ ] Address management
+* [ ] Order creation
+* [ ] Vendor-wise order splitting
+* [ ] Payment gateway integration
+* [ ] Order tracking
+* [ ] Order history
 
----
+### Phase 6 — Production Readiness
 
-## 🔮 Future Development
-
-The next development phase can convert SwiftCart into a complete multi-vendor marketplace.
-
-### Backend
-
-- Node.js
-- Express.js
-- REST APIs
-- MongoDB
-
-### Authentication & Authorization
-
-Implement JWT-based authentication with role-based access control for:
-
-- 👤 Customer
-- 🏪 Vendor
-- 🛡️ Admin
-
-### Vendor Features
-
-- Vendor registration
-- Vendor dashboard
-- Add products
-- Edit products
-- Delete products
-- Inventory management
-- View vendor-specific orders
-- Order status management
-
-### Customer Features
-
-- Registration and login
-- Customer profile
-- Saved addresses
-- Persistent wishlist
-- Persistent cart
-- Order placement
-- Order history
-- Order tracking
-
-### Admin Features
-
-- Admin dashboard
-- Manage customers
-- Manage vendors
-- Approve/reject sellers
-- Manage marketplace products
-- Manage categories
-- Monitor orders
-- Marketplace analytics
-
-### Checkout & Orders
-
-Future checkout functionality can include:
-
-- Secure checkout
-- Address management
-- Payment gateway integration
-- Order creation
-- Vendor-wise order splitting
-- Inventory updates
-- Order confirmation
+* [ ] Database integration
+* [ ] API integration
+* [ ] Backend validation
+* [ ] Security testing
+* [ ] Performance optimization
+* [ ] Deployment and monitoring
 
 ---
 
-## 🔐 Security Goals
+## 🔐 Security Considerations
 
-Future backend development should include:
+Security is an important part of the planned backend implementation.
 
-- Password hashing
-- JWT authentication
-- Role-based authorization
-- Protected API routes
-- Input validation
-- Secure environment variables
-- Vendor-scoped data access
-- Secure payment handling
+The production version should include:
+
+* Secure password hashing.
+* JWT-based authentication or an equivalent secure session mechanism.
+* Server-side role-based authorization.
+* Protected API endpoints.
+* Input validation and sanitization.
+* Environment-based secret management.
+* Vendor-scoped product and order access.
+* Secure payment processing.
+* Proper authentication and authorization checks.
+
+> **Important:** Frontend route protection alone does not provide security. All sensitive operations must be validated and authorized by the backend.
 
 ---
 
-## 🎯 Project Goal
+## 🤝 Contributing
 
-The goal of SwiftCart is to evolve from a frontend marketplace prototype into a scalable **multi-vendor e-commerce platform** where customers can purchase products from multiple vendors while vendors independently manage their products and orders through dedicated dashboards.
+SwiftCart is being developed collaboratively as a team project.
 
----
+Contributors are encouraged to follow the team's Git workflow.
 
-## 👥 Development
+### Development Workflow
 
-This project is being developed collaboratively as a team project.
-
-Contributors should pull the latest changes before starting work:
+**1. Get the latest main branch**
 
 ```bash
+git checkout main
 git pull origin main
 ```
 
-After completing and testing changes:
+**2. Create or switch to your feature branch**
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+**3. Make your changes and test locally**
+
+```bash
+npm install
+npm run dev
+```
+
+**4. Stage and commit your changes**
 
 ```bash
 git add .
-git commit -m "Describe your changes"
-git pull origin main
-git push origin main
+git commit -m "Add your feature description"
 ```
 
-Always resolve merge conflicts before pushing changes.
+**5. Push your feature branch**
+
+```bash
+git push origin feature/your-feature-name
+```
+
+**6. Create a Pull Request**
+
+* Base branch: `main`
+* Compare branch: Your feature branch
+* Provide a clear title and description.
+* Review the changes before merging.
+
+### Contribution Guidelines
+
+* Keep changes focused and organized.
+* Follow the existing project structure.
+* Avoid committing unnecessary files.
+* Test your changes before creating a PR.
+* Resolve merge conflicts carefully.
+* Never commit passwords, API keys, or other secrets.
 
 ---
 
-Current focus:
+## 👥 Team Development
 
-**Frontend Marketplace → Backend Integration → Authentication → Vendor/Admin Dashboards → Complete Multi-Vendor E-Commerce Platform**
+SwiftCart is a collaborative development project.
+
+The team works together to improve the marketplace experience, implement new features, maintain code quality, and gradually introduce backend functionality.
+
+Contributions, suggestions, and improvements are welcome.
+
+---
+
+## 📌 Current Project Direction
+
+```text
+Marketplace UI
+      ↓
+Authentication & Authorization
+      ↓
+Backend API Integration
+      ↓
+Vendor & Admin Management
+      ↓
+Orders & Payments
+      ↓
+Production-Ready Marketplace
+```
+
+**SwiftCart — Building a better multi-vendor shopping experience, one feature at a time.**
