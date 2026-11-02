@@ -5,26 +5,52 @@ import * as api from '../services/authService';
 export const useAuth = create((set, get) => {
   const id = () => get().user?.id;
   const setUser = (user) => { set({ user }); return user; };
-  const refresh = () => set({ users: api.listUsers(id()) });
+  const refresh = async () => {
+    try {
+      const list = await api.listUsers();
+      set({ users: list });
+    } catch (err) {
+      console.error('Failed to load users:', err);
+    }
+  };
+
   return {
-    user: null,
+    user: api.currentUser(),
     ready: false,
     users: [],
-    init: async () => { await api.ensureSeed(); set({ user: api.currentUser(), ready: true }); },
+    init: async () => {
+      const u = await api.ensureSeed();
+      set({ user: u, ready: true });
+    },
     signup: async (d) => setUser(await api.signup(d)),
     login: async (e, p, o) => setUser(await api.login(e, p, o)),
-    logout: () => { api.logout(); set({ user: null, users: [] }); },
-    updateProfile: async (d) => setUser(api.updateProfile(id(), d)),
-    changePassword: (o, n) => api.changePassword(id(), o, n),
-    saveAddress: async (a) => setUser(api.saveAddress(id(), a)),
-    removeAddress: async (aid) => setUser(api.removeAddress(id(), aid)),
+    logout: () => {
+      api.logout();
+      set({ user: null, users: [] });
+    },
+    updateProfile: async (d) => setUser(await api.updateProfile(id(), d)),
+    changePassword: async (o, n) => api.changePassword(id(), o, n),
+    saveAddress: async (a) => setUser(await api.saveAddress(id(), a)),
+    removeAddress: async (aid) => setUser(await api.removeAddress(id(), aid)),
     requestReset: api.requestReset,
     resetPassword: api.resetPassword,
     // admin
     loadUsers: refresh,
-    createUser: async (d) => { await api.createUser(id(), d); refresh(); },
-    setRole: (uid, r) => { api.setUserRole(id(), uid, r); refresh(); },
-    setStatus: (uid, s) => { api.setUserStatus(id(), uid, s); refresh(); },
-    removeUser: (uid) => { api.deleteUser(id(), uid); refresh(); },
+    createUser: async (d) => {
+      await api.createUser(id(), d);
+      await refresh();
+    },
+    setRole: async (uid, r) => {
+      await api.setUserRole(id(), uid, r);
+      await refresh();
+    },
+    setStatus: async (uid, s) => {
+      await api.setUserStatus(id(), uid, s);
+      await refresh();
+    },
+    removeUser: async (uid) => {
+      await api.deleteUser(id(), uid);
+      await refresh();
+    },
   };
 });

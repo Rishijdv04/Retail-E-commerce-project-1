@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import apiClient from '../../services/api';
 import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +9,7 @@ import Field from '../../components/auth/Field';
 import { useAuth } from '../../store/authStore';
 import { newUserSchema } from '../auth/schemas';
 
-const tryDo = (fn) => { try { fn(); } catch (e) { toast.error(e.message); } };
+const tryDo = async (fn) => { try { await fn(); } catch (e) { toast.error(e.message); } };
 const generate = () => {
   const c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
   const r = crypto.getRandomValues(new Uint32Array(10));
@@ -45,7 +46,16 @@ function AddUser() {
 export default function AdminDashboard() {
   const { user, users, loadUsers, setRole, setStatus, removeUser, logout } = useAuth();
   const nav = useNavigate();
-  useEffect(() => { loadUsers(); }, [loadUsers]);
+  const [stats, setStats] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [applications, setApplications] = useState([]);
+
+  useEffect(() => {
+    loadUsers();
+    apiClient.get('/admin/stats').then(res => setStats(res.data?.stats)).catch(console.warn);
+    apiClient.get('/orders').then(res => setOrders(res.data?.orders || [])).catch(console.warn);
+    apiClient.get('/sellers/applications').then(res => setApplications(res.data?.applications || [])).catch(console.warn);
+  }, [loadUsers]);
   const count = (r) => users.filter((u) => u.role === r).length;
   return (
     <main className="scx-page scx-wide scx-admin">
@@ -58,8 +68,10 @@ export default function AdminDashboard() {
           </div>
         </header>
         <div className="scx-stats">
-          <div><b>{users.length}</b>Total users</div><div><b>{count('customer')}</b>Customers</div>
-          <div><b>{count('vendor')}</b>Vendors</div><div><b>{count('admin')}</b>Admins</div>
+          <div><b>₹{(stats?.totalRevenue || 0).toLocaleString('en-IN')}</b>Total revenue</div>
+          <div><b>{stats?.totalOrders ?? orders.length}</b>Total orders</div>
+          <div><b>{stats?.totalProducts || 12}</b>Products in catalog</div>
+          <div><b>{users.length}</b>Registered users</div>
         </div>
         <h2>Add a user</h2>
         <AddUser />
@@ -94,6 +106,49 @@ export default function AdminDashboard() {
                   </tr>
                 );
               })}
+            </tbody>
+          </table>
+        </div>
+        <h2>Recent marketplace orders ({orders.length})</h2>
+        <div className="scx-table">
+          <table>
+            <thead><tr><th>Order #</th><th>Customer / Phone</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+              {orders.length === 0 ? (
+                <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--mute)' }}>No orders placed yet.</td></tr>
+              ) : (
+                orders.map(o => (
+                  <tr key={o.id || o._id}>
+                    <td><b>{o.orderNumber}</b></td>
+                    <td>{o.shippingAddress?.fullName || 'Customer'}<br/><span style={{ fontSize: '0.75rem', color: 'var(--mute)' }}>{o.shippingAddress?.phone}</span></td>
+                    <td>{o.items?.map(i => `${i.name} (${i.quantity})`).join(', ')}</td>
+                    <td><b>₹{o.totalAmount?.toLocaleString('en-IN')}</b></td>
+                    <td><span className="scx-pill" style={{ textTransform: 'capitalize' }}>{o.status}</span></td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Seller onboarding applications ({applications.length})</h2>
+        <div className="scx-table">
+          <table>
+            <thead><tr><th>Brand name</th><th>Business email</th><th>Category</th><th>Applied on</th><th>Status</th></tr></thead>
+            <tbody>
+              {applications.length === 0 ? (
+                <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--mute)' }}>No seller applications yet.</td></tr>
+              ) : (
+                applications.map(a => (
+                  <tr key={a.id || a._id}>
+                    <td><b>{a.brand}</b></td>
+                    <td>{a.email}</td>
+                    <td>{a.category}</td>
+                    <td>{new Date(a.createdAt).toLocaleDateString()}</td>
+                    <td><span className="scx-pill" style={{ textTransform: 'capitalize' }}>{a.status}</span></td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

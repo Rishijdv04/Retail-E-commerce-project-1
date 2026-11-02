@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "server": "node server/src/server.js",
+    "server:dev": "node --watch server/src/server.js",
+    "server:seed": "node server/src/seed.js",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -31,4 +34,3 @@
     "eslint-plugin-react-refresh": "^0.4.20"
   }
 }
-
