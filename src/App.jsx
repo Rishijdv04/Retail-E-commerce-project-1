@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from 'react';
 import apiClient from './services/api';
 import { Link } from 'react-router';
 import { useAuth } from './store/authStore';
+import ProductDetailModal from './components/ProductDetailModal';
 import {
   Search,
   Heart,
@@ -22,6 +23,7 @@ import { products, categories } from './data/products.js';
 const money = (value) => `₹${value.toLocaleString('en-IN')}`;
 
 export default function App() {
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [query, setQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef(null);
@@ -88,7 +90,14 @@ export default function App() {
       .get('/products')
       .then((res) => {
         if (res.data?.products?.length) {
-          setProductList(res.data.products);
+          const apiProducts = [...res.data.products];
+          // Ensure products in local catalog (like product 13 spotlight) are merged if missing
+          products.forEach((lp) => {
+            if (!apiProducts.some((p) => String(p.id) === String(lp.id) || String(p.legacyId) === String(lp.id))) {
+              apiProducts.push(lp);
+            }
+          });
+          setProductList(apiProducts);
         }
       })
       .catch((err) => {
@@ -460,9 +469,8 @@ export default function App() {
                         className="search-item"
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          setQuery(item.name);
+                          setSelectedProduct(item);
                           setSearchFocused(false);
-                          goToShop();
                         }}
                       >
                         <div className="search-item-img">
@@ -857,6 +865,7 @@ export default function App() {
                 <article
                   className="product-card"
                   key={p.id}
+                  onClick={() => setSelectedProduct(p)}
                 >
 
                   <div
@@ -869,7 +878,10 @@ export default function App() {
 
                     <button
                       className={`wish ${isWishlisted(p) ? 'liked' : ''} ${recentlyWishlisted[p.id] ? 'animating' : ''}`}
-                      onClick={() => toggleWishlist(p.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(p.id);
+                      }}
                       aria-label={`Toggle wishlist for ${p.name}`}
                       title={isWishlisted(p) ? 'Remove from wishlist' : 'Save to wishlist'}
                     >
@@ -925,7 +937,10 @@ export default function App() {
 
                       <button
                         className={`add-btn ${recentlyAdded[p.id] ? 'added' : ''}`}
-                        onClick={() => addToCart(p.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(p.id);
+                        }}
                         aria-label={`Add ${p.name} to cart`}
                         title={recentlyAdded[p.id] ? 'Added!' : 'Add to cart'}
                       >
@@ -1044,7 +1059,14 @@ export default function App() {
             </div>
 
             {/* CENTER — MAKEUP PRODUCT IMAGE */}
-            <div className="spotlight-product-image">
+            <div
+              className="spotlight-product-image"
+              onClick={() => {
+                const prod = productList.find((p) => String(p.id) === '13' || String(p.legacyId) === '13') || products.find((p) => p.id === 13);
+                if (prod) setSelectedProduct(prod);
+              }}
+              title="Click to view full details"
+            >
 
               <span className="spotlight-tag">
                 BEAUTY PICK
@@ -1064,12 +1086,24 @@ export default function App() {
                 Sponsored <span>ⓘ</span>
               </span>
 
-              <h2>
+              <h2
+                onClick={() => {
+                  const prod = productList.find((p) => String(p.id) === '13' || String(p.legacyId) === '13') || products.find((p) => p.id === 13);
+                  if (prod) setSelectedProduct(prod);
+                }}
+                title="Click to view full details"
+              >
                 Everyday Glow Makeup Set,
                 Beauty Essentials for Your Daily Look
               </h2>
 
-              <div className="spotlight-rating">
+              <div
+                className="spotlight-rating"
+                onClick={() => {
+                  const prod = productList.find((p) => String(p.id) === '13' || String(p.legacyId) === '13') || products.find((p) => p.id === 13);
+                  if (prod) setSelectedProduct(prod);
+                }}
+              >
 
                 <strong>4.6</strong>
 
@@ -1077,9 +1111,9 @@ export default function App() {
                   ★★★★★
                 </span>
 
-                <a href="#reviews">
+                <span className="spotlight-reviews-link">
                   (428)
-                </a>
+                </span>
 
               </div>
 
@@ -1110,15 +1144,22 @@ export default function App() {
               </p>
 
               <button
-                className="spotlight-btn"
-                onClick={() =>
-                  notify(
-                    'Beauty product added to cart'
-                  )
-                }
+                className={`spotlight-btn ${recentlyAdded[13] ? 'added' : ''}`}
+                onClick={() => addToCart(13)}
+                aria-label="Add Everyday Glow Makeup Set to cart"
+                title={recentlyAdded[13] ? 'Added to cart!' : 'Add to cart'}
               >
-                Add to cart
-                <ArrowUpRight size={16} />
+                {recentlyAdded[13] ? (
+                  <>
+                    <Check size={16} strokeWidth={2.5} />
+                    Added to cart!
+                  </>
+                ) : (
+                  <>
+                    Add to cart
+                    <ArrowUpRight size={16} />
+                  </>
+                )}
               </button>
 
             </div>
@@ -1769,6 +1810,30 @@ export default function App() {
 
           </section>
         </div>
+      )}
+
+      {/* AMAZON-STYLE PRODUCT DETAIL MODAL */}
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={(productId, qty, color) => {
+            for (let i = 0; i < qty; i++) {
+              addToCart(productId);
+            }
+            notify(`Added ${qty} × ${selectedProduct.name} (${color}) to your cart!`);
+          }}
+          onBuyNow={(productId, qty, color) => {
+            for (let i = 0; i < qty; i++) {
+              addToCart(productId);
+            }
+            setSelectedProduct(null);
+            setShowCart(true);
+            setCheckoutStep('shipping');
+          }}
+          isWishlisted={isWishlisted(selectedProduct)}
+          onToggleWishlist={() => toggleWishlist(selectedProduct.id)}
+        />
       )}
 
       {/* TOAST */}
