@@ -2598,3 +2598,515 @@ footer {
     }
   }
 }
+
+/* ==========================================================================
+   ANIMATIONS & INTERACTIVE FEEDBACK (CART & CHECKOUT)
+   ========================================================================== */
+
+/* 1. Add to cart button pop and checkmark animation */
+.add-btn {
+  position: relative;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease, box-shadow 0.25s ease !important;
+  cursor: pointer;
+}
+
+.add-btn:active {
+  transform: scale(0.88);
+}
+
+.add-btn.added {
+  background: #10b981 !important;
+  transform: scale(1.12);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+}
+
+.plus-one-float {
+  position: absolute;
+  top: -20px;
+  right: -8px;
+  background: #1769ff;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(23, 105, 255, 0.35);
+  animation: floatUpBadge 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 10;
+}
+
+@keyframes floatUpBadge {
+  0% { opacity: 0; transform: translateY(8px) scale(0.5); }
+  30% { opacity: 1; transform: translateY(-3px) scale(1.15); }
+  75% { opacity: 1; transform: translateY(-16px) scale(1); }
+  100% { opacity: 0; transform: translateY(-26px) scale(0.85); }
+}
+
+/* 2. Cart Icon bounce animation */
+.cart-icon.cart-bump {
+  animation: cartIconPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cart-count.badge-bump {
+  animation: cartBadgePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cartIconPop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.22) rotate(-12deg); }
+  60% { transform: scale(1.15) rotate(10deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes cartBadgePop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.45); background: #10b981 !important; }
+  100% { transform: scale(1); }
+}
+
+/* 3. Checkout Drawer Step Transitions & Forms */
+.checkout-step-container {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  animation: fadeInSlide 0.28s ease-out;
+  overflow-y: auto;
+  flex: 1;
+}
+
+@keyframes fadeInSlide {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.checkout-step-head {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.85rem;
+}
+
+.checkout-step-head h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+}
+
+.checkout-step-head p {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.checkout-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.checkout-field.full {
+  grid-column: 1 / -1;
+}
+
+.checkout-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+}
+
+.checkout-field input,
+.checkout-field textarea,
+.checkout-field select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  font-size: 0.875rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.checkout-field input:focus,
+.checkout-field textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(23, 105, 255, 0.12);
+}
+
+.checkout-payment-box {
+  background: #f0f7ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 0.95rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkout-payment-box strong {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: #1e3a8a;
+}
+
+.checkout-summary-bar {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.checkout-summary-bar strong {
+  color: var(--green);
+  font-size: 1.05rem;
+}
+
+.checkout-actions-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.checkout-actions-row button {
+  flex: 1;
+}
+
+/* 4. Celebratory Order Success Screen */
+.order-success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.25rem 1.5rem;
+  animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow-y: auto;
+  flex: 1;
+}
+
+@keyframes successPop {
+  0% { transform: scale(0.65); opacity: 0; }
+  75% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.success-icon-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #059669;
+  display: grid;
+  place-items: center;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 0 0 12px rgba(16, 185, 129, 0.12);
+  animation: pulseRing 2s infinite;
+}
+
+@keyframes pulseRing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.order-success-screen h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.45rem;
+}
+
+.order-success-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 340px;
+  margin-bottom: 1.25rem;
+  line-height: 1.45;
+}
+
+.order-success-card {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  width: 100%;
+  text-align: left;
+  font-size: 0.84rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.order-id-badge {
+  background: #eff6ff;
+  color: var(--green);
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  display: inline-block;
+  margin-top: 0.2rem;
+  letter-spacing: 0.04em;
+}
+
+.order-success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.order-success-actions .primary-btn,
+.order-success-actions .outline-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem;
+  font-size: 0.92rem;
+}
+
+/* ==========================================================================
+   UPI ONLINE PAYMENT & SELLER APPLICATION STYLES
+   ========================================================================== */
+.payment-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0.35rem 0;
+}
+
+@media (max-width: 480px) {
+  .payment-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment-card {
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  position: relative;
+  text-align: left;
+}
+
+.payment-card:hover {
+  border-color: #93c5fd;
+}
+
+.payment-card.active {
+  border-color: var(--green);
+  background: #f0f7ff;
+  box-shadow: 0 0 0 2px rgba(23, 105, 255, 0.15);
+}
+
+.payment-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.payment-card-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.upi-details-box {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.95rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  animation: fadeInSlide 0.22s ease-out;
+}
+
+.upi-apps-row {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.upi-app-chip {
+  flex: 1;
+  min-width: 65px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0.45rem 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.18s ease;
+  color: var(--text);
+}
+
+.upi-app-chip:hover {
+  background: #f1f5f9;
+}
+
+.upi-app-chip.selected {
+  border-color: var(--green);
+  background: #eff6ff;
+  color: var(--green);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(23, 105, 255, 0.2);
+}
+
+.upi-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.upi-input-group input {
+  flex: 1;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.upi-input-group input:focus {
+  border-color: var(--green);
+}
+
+.upi-verify-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Seller Success View */
+.seller-success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  animation: successPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.seller-success-screen h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.35rem;
+}
+
+.seller-success-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  width: 100%;
+  text-align: left;
+  margin: 1.1rem 0 1.35rem;
+  font-size: 0.84rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* ==========================================================================
+   WISHLIST HEART ANIMATIONS
+   ========================================================================== */
+.wish {
+  position: absolute !important;
+  right: 11px !important;
+  top: 11px !important;
+  z-index: 2 !important;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, border-color 0.2s !important;
+  cursor: pointer;
+}
+
+.wish:active {
+  transform: scale(0.85);
+}
+
+.wish.liked {
+  color: #ef4444;
+  border-color: #fecdd3;
+  background: #fff1f2;
+}
+
+.wish.animating {
+  animation: heartPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.heart-icon-pop {
+  animation: heartScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+@keyframes heartScale {
+  0% { transform: scale(0.75); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Navbar Wishlist Icon Bump & Counter */
+.icon-btn.wishlist-bump {
+  animation: wishIconPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes wishIconPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28) rotate(-12deg); }
+  65% { transform: scale(1.15) rotate(10deg); }
+  100% { transform: scale(1); }
+}
+
+.wishlist-count {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+  transition: transform 0.2s;
+}
+
+.wishlist-count.badge-bump {
+  animation: badgePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
