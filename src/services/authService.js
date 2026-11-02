@@ -60,7 +60,17 @@ export async function signup({ name, email, password }) {
   return user;
 }
 
-export async function login(email, password, { adminOnly = false } = {}) {
+export async function login(emailOrObj, maybePassword, options = {}) {
+  let email = emailOrObj;
+  let password = maybePassword;
+  let adminOnly = options?.adminOnly || false;
+  if (typeof emailOrObj === 'object' && emailOrObj !== null) {
+    email = emailOrObj.email;
+    password = emailOrObj.password;
+    if (emailOrObj.adminOnly !== undefined) {
+      adminOnly = emailOrObj.adminOnly;
+    }
+  }
   const res = await apiClient.post('/auth/login', { email, password, adminOnly });
   const { token, user } = res.data;
   saveSession(token, user);
