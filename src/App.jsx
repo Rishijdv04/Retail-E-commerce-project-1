@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import apiClient from './services/api';
 import { Link } from 'react-router';
 import { useAuth } from './store/authStore';
@@ -23,6 +23,8 @@ const money = (value) => `₹${value.toLocaleString('en-IN')}`;
 
 export default function App() {
   const [query, setQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef(null);
   const [category, setCategory] = useState('All');
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState('featured');
@@ -125,35 +127,63 @@ export default function App() {
     );
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchSuggestions = useMemo(() => {
+    if (!query.trim()) return [];
+    const q = query.trim().toLowerCase();
+    return productList
+      .filter((p) =>
+        `${p.name} ${p.vendor} ${p.category} ${p.description || ''} ${p.tag || ''}`
+          .toLowerCase()
+          .includes(q)
+      )
+      .slice(0, 5);
+  }, [query, productList]);
+
   const visibleProducts = useMemo(() => {
-    let list = productList.filter(
-      (p) =>
-        (category === 'All' || p.category === category) &&
-        (filter === 'All' || p.status === filter)
-    );
+    let list = productList;
 
     if (query.trim()) {
+      const q = query.trim().toLowerCase();
       list = list.filter((p) =>
-        `${p.name} ${p.vendor} ${p.category}`
+        `${p.name} ${p.vendor} ${p.category} ${p.description || ''} ${p.tag || ''}`
           .toLowerCase()
-          .includes(query.trim().toLowerCase())
+          .includes(q)
       );
+    } else if (category !== 'All') {
+      list = list.filter((p) => p.category === category);
+    }
+
+    if (filter !== 'All') {
+      list = list.filter((p) => p.status === filter);
     }
 
     if (showWishlist) {
-      list = list.filter((p) => wishlist.some((w) => String(w) === String(p.id) || String(w) === String(p.legacyId) || String(w) === String(p._id)));
+      list = list.filter((p) =>
+        wishlist.some(
+          (w) =>
+            String(w) === String(p.id) ||
+            String(w) === String(p.legacyId) ||
+            String(w) === String(p._id)
+        )
+      );
     }
 
     if (sort === 'low') {
-      list.sort((a, b) => a.price - b.price);
-    }
-
-    if (sort === 'high') {
-      list.sort((a, b) => b.price - a.price);
-    }
-
-    if (sort === 'rating') {
-      list.sort((a, b) => b.rating - a.rating);
+      list = [...list].sort((a, b) => a.price - b.price);
+    } else if (sort === 'high') {
+      list = [...list].sort((a, b) => b.price - a.price);
+    } else if (sort === 'rating') {
+      list = [...list].sort((a, b) => b.rating - a.rating);
     }
 
     return list;
@@ -370,19 +400,112 @@ export default function App() {
             )}
           </div>
 
-          <label className="search">
-            <Search size={17} />
-
-            <input
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setShowWishlist(false);
+          <div className="search-wrap" ref={searchRef}>
+            <form
+              className="search"
+              role="search"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setSearchFocused(false);
+                goToShop();
               }}
-              placeholder="Search products, brands and more…"
-              aria-label="Search products"
-            />
-          </label>
+            >
+              <Search size={17} aria-hidden="true" />
+
+              <input
+                value={query}
+                onFocus={() => setSearchFocused(true)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setShowWishlist(false);
+                  setSearchFocused(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setSearchFocused(false);
+                }}
+                placeholder="Search products, brands, categories…"
+                aria-label="Search products"
+              />
+
+              {query.trim().length > 0 && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => {
+                    setQuery('');
+                    setSearchFocused(false);
+                  }}
+                  aria-label="Clear search query"
+                  title="Clear search"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </form>
+
+            {searchFocused && query.trim().length > 0 && (
+              <div className="search-dropdown">
+                <div className="search-dropdown-header">
+                  <span>Matching Products</span>
+                  <span className="search-count-badge">
+                    {visibleProducts.length} {visibleProducts.length === 1 ? 'result' : 'results'}
+                  </span>
+                </div>
+
+                {searchSuggestions.length > 0 ? (
+                  <div className="search-dropdown-list">
+                    {searchSuggestions.map((item) => (
+                      <div
+                        key={item.id || item._id}
+                        className="search-item"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setQuery(item.name);
+                          setSearchFocused(false);
+                          goToShop();
+                        }}
+                      >
+                        <div className="search-item-img">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                          <span className="search-item-fallback">{item.emoji}</span>
+                        </div>
+                        <div className="search-item-info">
+                          <span className="search-item-title">{item.name}</span>
+                          <span className="search-item-sub">
+                            by {item.vendor} · <span className="search-item-cat">{item.category}</span>
+                          </span>
+                        </div>
+                        <span className="search-item-price">{money(item.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="search-no-results">
+                    <p>No products matching &ldquo;{query}&rdquo;</p>
+                    <small>Try searching headphones, sneakers, mug, lamp, or serum</small>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="search-dropdown-footer"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setSearchFocused(false);
+                    goToShop();
+                  }}
+                >
+                  View all {visibleProducts.length} results in store <ArrowUpRight size={13} />
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="nav-actions">
 
@@ -608,19 +731,60 @@ export default function App() {
 
             <div>
               <h2>
-                {showWishlist
-                  ? 'Your wishlist'
-                  : category === 'All'
-                  ? 'Trending right now'
-                  : `${category} picks`}{' '}
-                <span className="spark">✳</span>
+                {query.trim() ? (
+                  <>
+                    Search results for &ldquo;{query.trim()}&rdquo;{' '}
+                    <span className="spark">🔍</span>
+                  </>
+                ) : showWishlist ? (
+                  <>
+                    Your wishlist <span className="spark">✳</span>
+                  </>
+                ) : category === 'All' ? (
+                  <>
+                    Trending right now <span className="spark">✳</span>
+                  </>
+                ) : (
+                  <>
+                    {category} picks <span className="spark">✳</span>
+                  </>
+                )}
               </h2>
 
               <p>
-                {showWishlist
+                {query.trim()
+                  ? `Found ${visibleProducts.length} ${visibleProducts.length === 1 ? 'product' : 'products'} matching your search.`
+                  : showWishlist
                   ? 'Your saved finds, all in one place.'
                   : `${visibleProducts.length} handpicked finds from independent sellers and brands.`}
               </p>
+
+              {query.trim() && (
+                <div className="search-active-pill-row">
+                  <span className="search-pill">
+                    Query: <strong>&ldquo;{query.trim()}&rdquo;</strong>
+                    <button
+                      type="button"
+                      onClick={() => setQuery('')}
+                      aria-label="Clear search"
+                      title="Clear search"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                  <button
+                    type="button"
+                    className="clear-all-text"
+                    onClick={() => {
+                      setQuery('');
+                      setCategory('All');
+                      setFilter('All');
+                    }}
+                  >
+                    Clear search
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="toolbar">
@@ -789,13 +953,17 @@ export default function App() {
                 </div>
 
                 <strong>
-                  {showWishlist
+                  {query.trim()
+                    ? `No products found for "${query.trim()}".`
+                    : showWishlist
                     ? 'Your wishlist is empty.'
                     : 'No matches just yet.'}
                 </strong>
 
                 <p>
-                  {showWishlist
+                  {query.trim()
+                    ? 'Check your spelling or try searching for keywords like headphones, sneakers, mug, or serum.'
+                    : showWishlist
                     ? 'Tap the heart on any product to save it here.'
                     : 'Try another search or clear your filters.'}
                 </p>
