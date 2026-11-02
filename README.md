@@ -212,21 +212,40 @@ cd Retail-E-commerce-project-1
 
 ### 3. Install Dependencies
 
+Install root frontend and backend dependencies:
+
 ```bash
 npm install
+cd server && npm install && cd ..
 ```
 
-### 4. Start the Development Server
+### 4. Seed Demo Data (Optional)
+
+Seed catalog products, categories, demo customers, and admin accounts into MongoDB:
+
+```bash
+npm run server:seed
+```
+
+### 5. Start the Backend API Server
+
+Start the Express REST API (runs on http://localhost:5000 with auto-failover to in-memory MongoDB):
+
+```bash
+npm run server
+```
+
+### 6. Start the Frontend Development Server
+
+In a second terminal window:
 
 ```bash
 npm run dev
 ```
 
-### 5. Open in Browser
+### 7. Open in Browser
 
-Vite will display the local development URL in your terminal.
-
-Usually:
+Vite will serve the frontend at:
 
 ```text
 http://localhost:5173
@@ -270,9 +289,9 @@ SwiftCart is being developed in phases to gradually evolve into a complete marke
 * [x] Authentication state management structure
 * [x] Protected route structure
 * [x] Profile interface
-* [ ] Complete backend authentication integration
-* [ ] Secure session management
-* [ ] Role-based backend authorization
+* [x] Complete backend authentication integration
+* [x] Secure session management
+* [x] Role-based backend authorization
 
 ### Phase 3 — Vendor Management
 
@@ -286,7 +305,7 @@ SwiftCart is being developed in phases to gradually evolve into a complete marke
 ### Phase 4 — Admin Management
 
 * [x] Admin dashboard interface
-* [ ] Admin backend integration
+* [x] Admin backend integration
 * [ ] Customer management
 * [ ] Vendor approval and management
 * [ ] Product and category management
@@ -294,18 +313,18 @@ SwiftCart is being developed in phases to gradually evolve into a complete marke
 
 ### Phase 5 — Orders & Payments
 
-* [ ] Secure checkout
+* [x] Secure checkout
 * [ ] Address management
-* [ ] Order creation
+* [x] Order creation
 * [ ] Vendor-wise order splitting
 * [ ] Payment gateway integration
 * [ ] Order tracking
-* [ ] Order history
+* [x] Order history
 
 ### Phase 6 — Production Readiness
 
-* [ ] Database integration
-* [ ] API integration
+* [x] Database integration (MongoDB & Mongoose)
+* [x] REST API integration (Express)
 * [ ] Backend validation
 * [ ] Security testing
 * [ ] Performance optimization
