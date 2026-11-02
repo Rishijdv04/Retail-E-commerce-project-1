@@ -1,190 +1,208 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { LogOut, Package, ShoppingBag, Store, UserRound, Clock, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { MapPin, Pencil, Trash2, Plus, Package } from 'lucide-react';
-import apiClient from '../services/api';
-import Field from '../components/auth/Field';
 import { useAuth } from '../store/authStore';
-import { profileSchema, passwordChangeSchema, addressSchema } from './auth/schemas';
+import apiClient from '../services/api';
 
-const guard = (fn) => async (d) => { try { await fn(d); } catch (e) { toast.error(e.message); } };
+const money = (val) => `₹${Number(val || 0).toLocaleString('en-IN')}`;
 
-function ProfileTab() {
-  const { user, updateProfile } = useAuth();
-  const { register, handleSubmit, formState: { errors, isDirty } } = useForm({
-    resolver: zodResolver(profileSchema), defaultValues: { name: user.name, phone: user.phone },
-  });
-  return (
-    <form onSubmit={handleSubmit(guard(async (d) => { await updateProfile(d); toast.success('Profile saved'); }))} noValidate>
-      <Field label="Full name" error={errors.name?.message} {...register('name')} />
-      <Field label="Email" value={user.email} disabled readOnly hint="Email cannot be changed here" />
-      <Field label="Mobile number" inputMode="tel" error={errors.phone?.message} {...register('phone')} />
-      <button className="scx-btn" disabled={!isDirty}>Save changes</button>
-    </form>
-  );
-}
+export default function ProfilePage() {
+  const user = useAuth((s) => s.user);
+  const logout = useAuth((s) => s.logout);
+  const navigate = useNavigate();
 
-function PasswordTab() {
-  const { changePassword } = useAuth();
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(passwordChangeSchema) });
-  return (
-    <form onSubmit={handleSubmit(guard(async (d) => { await changePassword(d.current, d.password); reset(); toast.success('Password changed'); }))} noValidate>
-      <Field label="Current password" type="password" autoComplete="current-password" error={errors.current?.message} {...register('current')} />
-      <Field label="New password" type="password" autoComplete="new-password" error={errors.password?.message} {...register('password')} />
-      <Field label="Confirm new password" type="password" autoComplete="new-password" error={errors.confirm?.message} {...register('confirm')} />
-      <button className="scx-btn">Update password</button>
-    </form>
-  );
-}
-
-function AddressForm({ initial, onDone }) {
-  const { saveAddress } = useAuth();
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(addressSchema), defaultValues: initial || { label: 'Home', isDefault: false },
-  });
-  const f = (name, label, extra) => <Field label={label} error={errors[name]?.message} {...extra} {...register(name)} />;
-  return (
-    <form className="scx-addrform" onSubmit={handleSubmit(guard(async (d) => {
-      await saveAddress({ ...d, id: initial?.id }); toast.success('Address saved'); onDone();
-    }))} noValidate>
-      {f('label', 'Address name (Home, Office…)')}
-      {f('fullName', 'Recipient name')}
-      {f('phone', 'Mobile number', { inputMode: 'tel' })}
-      {f('line1', 'Street address')}
-      {f('city', 'City')}
-      {f('state', 'State')}
-      {f('pincode', 'PIN code', { inputMode: 'numeric', maxLength: 6 })}
-      <label className="scx-check"><input type="checkbox" {...register('isDefault')} /> Use as my default address</label>
-      <div className="scx-actions">
-        <button className="scx-btn">Save address</button>
-        <button type="button" className="scx-btn scx-ghost" onClick={onDone}>Cancel</button>
-      </div>
-    </form>
-  );
-}
-
-function AddressTab() {
-  const { user, removeAddress } = useAuth();
-  const [editing, setEditing] = useState(null); // null | 'new' | address
-  if (editing) return <AddressForm initial={editing === 'new' ? null : editing} onDone={() => setEditing(null)} />;
-  const list = user.addresses || [];
-  return (
-    <div>
-      {!list.length && <p className="scx-empty">No saved addresses yet. Add one to check out faster.</p>}
-      <ul className="scx-addrs">
-        {list.map((a) => (
-          <li key={a.id}>
-            <MapPin size={18} />
-            <div>
-              <b>{a.label}</b>{a.isDefault && <span className="scx-pill">Default</span>}
-              <p>{a.fullName}, {a.phone}<br />{a.line1}, {a.city}, {a.state} {a.pincode}</p>
-            </div>
-            <button className="scx-icon" aria-label={`Edit ${a.label}`} onClick={() => setEditing(a)}><Pencil size={16} /></button>
-            <button className="scx-icon" aria-label={`Delete ${a.label}`} onClick={() => window.confirm('Delete this address?') && removeAddress(a.id)}><Trash2 size={16} /></button>
-          </li>
-        ))}
-      </ul>
-      <button className="scx-btn" onClick={() => setEditing('new')}><Plus size={16} /> Add address</button>
-    </div>
-  );
-}
-
-function OrdersTab() {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'orders'
 
   useEffect(() => {
+    if (!user) return;
     apiClient
       .get('/orders/my-orders')
       .then((res) => {
         setOrders(res.data?.orders || []);
       })
       .catch((err) => {
-        console.warn('Orders fetch error:', err.message);
+        console.warn('Orders fetch note:', err.message);
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => setLoadingOrders(false));
+  }, [user]);
 
-  if (loading) {
-    return <div className="scx-loading"><p>Loading your orders…</p></div>;
-  }
+  if (!user) return null;
 
-  if (!orders.length) {
-    return (
-      <div className="scx-empty">
-        <Package size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
-        <p>No orders placed yet.</p>
-        <p style={{ fontSize: '0.85rem', color: 'var(--mute)' }}>
-          Items you purchase will appear here with live tracking.
-        </p>
-        <Link to="/" className="scx-btn" style={{ marginTop: 12, display: 'inline-flex', width: 'auto' }}>
-          Explore Products
+  const signout = () => {
+    logout();
+    toast.success('Signed out successfully');
+    navigate('/');
+  };
+
+  return (
+    <main className="account-page">
+      <div className="account-top">
+        <Link className="brand" to="/">
+          <span className="brand-mark">↗</span> swift<span>cart</span>
+        </Link>
+        <Link to="/" style={{ color: '#263c28', fontWeight: 700, textDecoration: 'none' }}>
+          Continue shopping
         </Link>
       </div>
-    );
-  }
 
-  return (
-    <div style={{ display: 'grid', gap: '14px' }}>
-      {orders.map((order) => (
-        <div key={order.id || order._id} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-            <div>
-              <b style={{ fontSize: '1.05rem' }}>Order #{order.orderNumber}</b>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--mute)' }}>
-                Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="scx-pill" style={{ textTransform: 'capitalize' }}>{order.status || 'Processing'}</span>
-              <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>₹{order.totalAmount?.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
-
-          <div style={{ borderTop: '1px solid var(--line)', paddingTop: 10, display: 'grid', gap: 8 }}>
-            {order.items?.map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>{item.emoji || '🛍️'}</span>
-                  <span>{item.name} <span style={{ color: 'var(--mute)' }}>× {item.quantity}</span></span>
-                </span>
-                <span style={{ fontWeight: 600 }}>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
-              </div>
-            ))}
-          </div>
+      <section className="account-card" style={{ maxWidth: activeTab === 'orders' ? '700px' : '480px' }}>
+        <div className="account-avatar">
+          <UserRound size={32} />
         </div>
-      ))}
-    </div>
-  );
-}
+        <p className="eyebrow" style={{ color: '#527c35', fontWeight: 800, fontSize: '12px' }}>
+          SWIFTCART ACCOUNT
+        </p>
+        <h1 style={{ margin: '4px 0 6px' }}>Hello, {user.name}</h1>
+        <p style={{ color: '#64748b', margin: '0 0 10px' }}>{user.email}</p>
+        <span className="role-pill">Verified {user.role || 'customer'}</span>
 
-export default function ProfilePage() {
-  const { user, logout } = useAuth();
-  const nav = useNavigate();
-  const [tab, setTab] = useState('orders');
-  const tabs = [['orders', 'My orders'], ['profile', 'Profile'], ['addresses', 'Saved addresses'], ['security', 'Password']];
-  return (
-    <main className="scx-page scx-wide">
-      <section className="scx-card scx-card-wide">
-        <header className="scx-head">
+        {/* Tab Switcher */}
+        <div style={{ display: 'flex', gap: '8px', margin: '22px 0 16px', borderBottom: '1px solid #dce4d6', paddingBottom: '12px' }}>
+          <button
+            onClick={() => setActiveTab('profile')}
+            style={{
+              flex: 1,
+              padding: '9px 12px',
+              border: 0,
+              borderRadius: '9px',
+              background: activeTab === 'profile' ? '#edf6e4' : 'transparent',
+              color: activeTab === 'profile' ? '#263c28' : '#64748b',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            style={{
+              flex: 1,
+              padding: '9px 12px',
+              border: 0,
+              borderRadius: '9px',
+              background: activeTab === 'orders' ? '#edf6e4' : 'transparent',
+              color: activeTab === 'orders' ? '#263c28' : '#64748b',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            <ShoppingBag size={15} /> My Orders ({orders.length})
+          </button>
+        </div>
+
+        {activeTab === 'profile' ? (
           <div>
-            <h1>Hi, {user.name.split(' ')[0]}</h1>
-            <p className="scx-sub">{user.email}</p>
+            <div className="account-actions">
+              <button
+                onClick={() => setActiveTab('orders')}
+                style={{
+                  border: '1px solid #dce4d6',
+                  background: '#fbfdf9',
+                  borderRadius: '12px',
+                  padding: '13px 10px',
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#263c28',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                <ShoppingBag size={18} /> View Orders ({orders.length})
+              </button>
+              <Link to="/#seller">
+                <Store size={18} /> Sell on SwiftCart
+              </Link>
+            </div>
+
+            {user.addresses?.length > 0 && (
+              <div style={{ textAlign: 'left', background: '#f8faf6', padding: '14px', borderRadius: '12px', border: '1px solid #e5ede0', margin: '16px 0' }}>
+                <strong style={{ fontSize: '13px', color: '#263c28' }}>Primary Delivery Address:</strong>
+                <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  {user.addresses[0].fullName} · {user.addresses[0].line1}, {user.addresses[0].city}, {user.addresses[0].pincode}
+                </p>
+              </div>
+            )}
+
+            <button className="auth-submit" onClick={signout} style={{ marginTop: '16px' }}>
+              <LogOut size={16} /> Sign out
+            </button>
           </div>
-          <div className="scx-actions">
-            <Link className="scx-btn scx-ghost" to="/">Continue shopping</Link>
-            <button className="scx-btn scx-ghost" onClick={() => { logout(); toast.success('Signed out'); nav('/'); }}>Sign out</button>
+        ) : (
+          <div style={{ textAlign: 'left' }}>
+            {loadingOrders ? (
+              <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>Loading orders from backend…</p>
+            ) : orders.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '30px 20px', color: '#64748b' }}>
+                <Package size={36} color="#8fc64a" style={{ margin: '0 auto 10px', display: 'block' }} />
+                <strong style={{ color: '#17251b', display: 'block' }}>No orders placed yet</strong>
+                <p style={{ fontSize: '13px', margin: '6px 0 16px' }}>Browse handpicked goods and place your first order.</p>
+                <Link to="/" className="auth-submit" style={{ display: 'inline-flex', width: 'auto', padding: '10px 20px' }}>
+                  Start Shopping
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '12px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }}>
+                {orders.map((ord) => (
+                  <article
+                    key={ord._id || ord.id}
+                    style={{
+                      border: '1px solid #dce4d6',
+                      borderRadius: '12px',
+                      padding: '14px',
+                      background: '#fbfdf9',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#263c28' }}>
+                        Order #{String(ord._id || ord.id).slice(-6).toUpperCase()}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          padding: '3px 8px',
+                          borderRadius: '99px',
+                          background: ord.orderStatus === 'delivered' ? '#edf6e4' : '#fef3c7',
+                          color: ord.orderStatus === 'delivered' ? '#4f7733' : '#b45309',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        {ord.orderStatus === 'delivered' ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+                        {ord.orderStatus || 'confirmed'}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
+                      {ord.items?.map((it, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
+                          <span>{it.quantity}x {it.name || it.product?.name || 'Item'}</span>
+                          <span>{money(it.price * it.quantity)}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #eef3eb', paddingTop: '8px', fontSize: '13px' }}>
+                      <span style={{ color: '#64748b' }}>Total Paid ({ord.paymentMethod?.toUpperCase() || 'COD'})</span>
+                      <strong style={{ color: '#17251b' }}>{money(ord.totalAmount || ord.total || 0)}</strong>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
-        </header>
-        <div className="scx-tabs" role="tablist">
-          {tabs.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
-        </div>
-        {tab === 'orders' && <OrdersTab />}
-        {tab === 'profile' && <ProfileTab />}
-        {tab === 'addresses' && <AddressTab />}
-        {tab === 'security' && <PasswordTab />}
+        )}
       </section>
     </main>
   );
