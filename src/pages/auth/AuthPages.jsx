@@ -45,6 +45,7 @@ function LoginForm({ adminOnly }) {
   if (user) return <Navigate to={loc.state?.from || (user.role === 'admin' ? '/admin' : '/account')} replace />;
   return (
     <form onSubmit={handleSubmit(run)} noValidate>
+      
       <Field label="Email" type="email" autoComplete="email" error={errors.email?.message} {...register('email')} />
       <Field label="Password" type="password" autoComplete="current-password" error={errors.password?.message} {...register('password')} />
       {!adminOnly && <Link className="scx-link scx-right" to="/forgot-password">Forgot password?</Link>}
