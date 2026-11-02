@@ -192,6 +192,24 @@ export const products = [
     glow: "#EDE9FE",
     tag: "NEW IN",
   },
+
+  {
+    id: 13,
+    legacyId: 13,
+    name: "Everyday Glow Makeup Set, Beauty Essentials",
+    vendor: "Dot & Key",
+    category: "Beauty",
+    price: 799,
+    old: 1499,
+    rating: 4.6,
+    reviews: 428,
+    status: "Popular",
+    emoji: "🍉",
+    image: "https://m.media-amazon.com/images/I/61Ls4tW2emL._AC_UL480_FMwebp_QL65_.jpg",
+    glow: "#FCE7F3",
+    tag: "BEAUTY PICK",
+    description: "Watermelon cooling gel eye patches and daily glow beauty essentials for fresh, radiant skin.",
+  },
 ];
 
 export const categories = [
