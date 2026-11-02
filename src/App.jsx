@@ -1,21 +1,17 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
-import apiClient from './services/api';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from './store/authStore';
-import ProductDetailModal from './components/ProductDetailModal';
 import {
   Search,
   Heart,
   ShoppingBag,
-  User,
   Menu,
   X,
   ArrowUpRight,
   Plus,
   Minus,
   SlidersHorizontal,
-  Sparkles,
-  Check
+  Sparkles
 } from 'lucide-react';
 
 import { products, categories } from './data/products.js';
@@ -23,107 +19,27 @@ import { products, categories } from './data/products.js';
 const money = (value) => `₹${value.toLocaleString('en-IN')}`;
 
 export default function App() {
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [query, setQuery] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
-  const searchRef = useRef(null);
   const [category, setCategory] = useState('All');
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState('featured');
-  const [productList, setProductList] = useState(products);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [isSubmittingSeller, setIsSubmittingSeller] = useState(false);
-  const [recentlyAdded, setRecentlyAdded] = useState({});
-  const [recentlyWishlisted, setRecentlyWishlisted] = useState({});
-  const [wishlistBump, setWishlistBump] = useState(false);
-  const [cartBump, setCartBump] = useState(false);
-  const [checkoutStep, setCheckoutStep] = useState('cart'); // 'cart' | 'shipping' | 'success'
-  const [confirmedOrder, setConfirmedOrder] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'upi'
-  const [selectedUpiApp, setSelectedUpiApp] = useState('gpay');
-  const [upiId, setUpiId] = useState('');
-  const [sellerSubmitted, setSellerSubmitted] = useState(false);
-  const [submittedBrand, setSubmittedBrand] = useState('');
-  const [shippingAddress, setShippingAddress] = useState({
-    fullName: '',
-    phone: '',
-    line1: 'Express Delivery Address',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    pincode: '400001',
-  });
-
-  const [cart, setCart] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('sc_cart')) || {};
-    } catch {
-      return {};
-    }
-  });
-
-  const [wishlist, setWishlist] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('sc_wishlist')) || [];
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('sc_cart', JSON.stringify(cart));
-    } catch (e) {
-      console.warn('Cart persist error', e);
-    }
-  }, [cart]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('sc_wishlist', JSON.stringify(wishlist));
-    } catch (e) {
-      console.warn('Wishlist persist error', e);
-    }
-  }, [wishlist]);
-
-  useEffect(() => {
-    apiClient
-      .get('/products')
-      .then((res) => {
-        if (res.data?.products?.length) {
-          const apiProducts = [...res.data.products];
-          // Ensure products in local catalog (like product 13 spotlight) are merged if missing
-          products.forEach((lp) => {
-            if (!apiProducts.some((p) => String(p.id) === String(lp.id) || String(p.legacyId) === String(lp.id))) {
-              apiProducts.push(lp);
-            }
-          });
-          setProductList(apiProducts);
-        }
-      })
-      .catch((err) => {
-        console.warn('API notice: using local catalog fallback:', err.message);
-      });
-  }, []);
+  const [cart, setCart] = useState(() => { try { return JSON.parse(localStorage.getItem('swiftcart-cart') || '{}'); } catch { return {}; } });
+  const [wishlist, setWishlist] = useState(() => { try { return JSON.parse(localStorage.getItem('swiftcart-wishlist') || '[]'); } catch { return []; } });
   const [showCart, setShowCart] = useState(false);
   const [showSeller, setShowSeller] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [toast, setToast] = useState('');
 
+  useEffect(() => { localStorage.setItem('swiftcart-cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { localStorage.setItem('swiftcart-wishlist', JSON.stringify(wishlist)); }, [wishlist]);
 
-
-  // ADDED: logged-in user (null when signed out) and account link helpers
+  // Admin access is the single account-related navigation entry.
   const user = useAuth((s) => s.user);
-  const accountPath = user?.role === 'admin' ? '/admin' : '/account';
-  const accountLabel = user
-    ? `My account (${user.name.split(' ')[0]})`
-    : 'Sign in';
 
   const [sellerForm, setSellerForm] = useState({
     brand: '',
     email: '',
-    phone: '',
-    category: 'Fashion',
-    description: '',
+    category: 'Fashion'
   });
 
   const notify = (message) => {
@@ -136,63 +52,35 @@ export default function App() {
     );
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setSearchFocused(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const searchSuggestions = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.trim().toLowerCase();
-    return productList
-      .filter((p) =>
-        `${p.name} ${p.vendor} ${p.category} ${p.description || ''} ${p.tag || ''}`
-          .toLowerCase()
-          .includes(q)
-      )
-      .slice(0, 5);
-  }, [query, productList]);
-
   const visibleProducts = useMemo(() => {
-    let list = productList;
+    let list = products.filter(
+      (p) =>
+        (category === 'All' || p.category === category) &&
+        (filter === 'All' || p.status === filter)
+    );
 
     if (query.trim()) {
-      const q = query.trim().toLowerCase();
       list = list.filter((p) =>
-        `${p.name} ${p.vendor} ${p.category} ${p.description || ''} ${p.tag || ''}`
+        `${p.name} ${p.vendor} ${p.category}`
           .toLowerCase()
-          .includes(q)
+          .includes(query.trim().toLowerCase())
       );
-    } else if (category !== 'All') {
-      list = list.filter((p) => p.category === category);
-    }
-
-    if (filter !== 'All') {
-      list = list.filter((p) => p.status === filter);
     }
 
     if (showWishlist) {
-      list = list.filter((p) =>
-        wishlist.some(
-          (w) =>
-            String(w) === String(p.id) ||
-            String(w) === String(p.legacyId) ||
-            String(w) === String(p._id)
-        )
-      );
+      list = list.filter((p) => wishlist.includes(p.id));
     }
 
     if (sort === 'low') {
-      list = [...list].sort((a, b) => a.price - b.price);
-    } else if (sort === 'high') {
-      list = [...list].sort((a, b) => b.price - a.price);
-    } else if (sort === 'rating') {
-      list = [...list].sort((a, b) => b.rating - a.rating);
+      list.sort((a, b) => a.price - b.price);
+    }
+
+    if (sort === 'high') {
+      list.sort((a, b) => b.price - a.price);
+    }
+
+    if (sort === 'rating') {
+      list.sort((a, b) => b.rating - a.rating);
     }
 
     return list;
@@ -202,13 +90,12 @@ export default function App() {
     query,
     sort,
     wishlist,
-    showWishlist,
-    productList
+    showWishlist
   ]);
 
   const cartEntries = Object.entries(cart)
     .map(([id, qty]) => ({
-      product: productList.find((p) => String(p.id) === String(id) || String(p.legacyId) === String(id) || String(p._id) === String(id)),
+      product: products.find((p) => p.id === Number(id)),
       qty
     }))
     .filter(
@@ -235,16 +122,9 @@ export default function App() {
       [id]: (old[id] || 0) + 1
     }));
 
-    // Trigger visual pop animation on button and cart icon
-    setRecentlyAdded((prev) => ({ ...prev, [id]: true }));
-    setCartBump(true);
-    setTimeout(() => {
-      setRecentlyAdded((prev) => ({ ...prev, [id]: false }));
-      setCartBump(false);
-    }, 1200);
-
-    const item = productList.find((p) => String(p.id) === String(id) || String(p.legacyId) === String(id) || String(p._id) === String(id));
-    notify(`${item?.name || 'Item'} added to cart! 🛍️`);
+    notify(
+      `${products.find((p) => p.id === id)?.name} added to cart`
+    );
   };
 
   const updateQty = (id, delta) =>
@@ -281,102 +161,11 @@ export default function App() {
       .getElementById('shop')
       ?.scrollIntoView({ behavior: 'smooth' });
 
-  const submitOrder = async () => {
-    if (cartEntries.length === 0) {
-      notify('Your cart is empty');
-      setCheckoutStep('cart');
-      return;
-    }
-
-    if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.line1) {
-      notify('Please enter your full name, phone, and delivery address');
-      return;
-    }
-
-    setIsCheckingOut(true);
-    try {
-      if (paymentMethod === 'upi') {
-        notify('Authorizing UPI payment… ⚡');
-        await new Promise((r) => setTimeout(r, 700));
-      }
-
-      const orderPayload = {
-        items: cartEntries.map((e) => ({
-          productId: e.product.id || e.product.legacyId || e.product._id,
-          name: e.product.name,
-          price: e.product.price,
-          quantity: e.qty,
-          vendor: e.product.vendor,
-          image: e.product.image || '',
-          emoji: e.product.emoji || '🛍️',
-        })),
-        shippingAddress: {
-          fullName: shippingAddress.fullName,
-          phone: shippingAddress.phone,
-          line1: shippingAddress.line1,
-          city: shippingAddress.city || 'Mumbai',
-          state: shippingAddress.state || 'Maharashtra',
-          pincode: shippingAddress.pincode || '400001',
-        },
-        paymentMethod: paymentMethod, // 'cod' or 'upi'
-      };
-
-      const res = await apiClient.post('/orders', orderPayload);
-      const placedOrder = res.data?.order || {
-        orderNumber: `SC-${Date.now().toString().slice(-6)}-1001`,
-        shippingAddress: orderPayload.shippingAddress,
-        totalAmount: subtotal + shipping,
-        items: orderPayload.items,
-        paymentMethod: paymentMethod,
-        paymentStatus: paymentMethod === 'upi' ? 'paid' : 'pending',
-      };
-
-      setConfirmedOrder(placedOrder);
-      setCart({});
-      setCheckoutStep('success');
-      notify(`Order #${placedOrder.orderNumber} placed successfully! 🎉`);
-    } catch (err) {
-      notify(`Checkout error: ${err.message}`);
-    } finally {
-      setIsCheckingOut(false);
-    }
-  };
-
-  const handleCheckout = () => {
-    if (cartEntries.length === 0) {
-      notify('Your cart is empty');
-      return;
-    }
-    setCheckoutStep('shipping');
-  };
-
-  const handleSellerSubmit = async (e) => {
-    e.preventDefault();
-    if (!sellerForm.brand || !sellerForm.email) {
-      notify('Please enter brand name and email');
-      return;
-    }
-
-    setIsSubmittingSeller(true);
-    try {
-      const res = await apiClient.post('/sellers/apply', sellerForm);
-      setSubmittedBrand(sellerForm.brand);
-      setSellerSubmitted(true);
-      notify(res.data?.message || `Application for ${sellerForm.brand} submitted successfully! 🎉`);
-    } catch (err) {
-      notify(`Application failed: ${err.message}`);
-    } finally {
-      setIsSubmittingSeller(false);
-    }
-  };
-
   const chooseCategory = (id) => {
     setCategory(id);
     setShowWishlist(false);
     goToShop();
   };
-
-  const isWishlisted = (p) => wishlist.some((w) => String(w) === String(p.id) || String(w) === String(p.legacyId) || String(w) === String(p._id));
 
   return (
     <div className="app-root">
@@ -402,125 +191,30 @@ export default function App() {
             <a href="#categories">Categories</a>
             <a href="#seller">Sell on SwiftCart</a>
 
-            {/* ADDED: account links */}
-            <Link to={accountPath}>{accountLabel}</Link>
-            {user?.role === 'admin' && (
-              <Link to="/admin">Admin</Link>
-            )}
+            {/* Single admin entry; signed-out visitors go to admin login. */}
+            <Link to={user?.role === 'admin' ? '/admin' : '/admin/login'}>Admin</Link>
           </div>
 
-          <div className="search-wrap" ref={searchRef}>
-            <form
-              className="search"
-              role="search"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSearchFocused(false);
-                goToShop();
+          <label className="search">
+            <Search size={17} />
+
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShowWishlist(false);
               }}
-            >
-              <Search size={17} aria-hidden="true" />
-
-              <input
-                value={query}
-                onFocus={() => setSearchFocused(true)}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setShowWishlist(false);
-                  setSearchFocused(true);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') setSearchFocused(false);
-                }}
-                placeholder="Search products, brands, categories…"
-                aria-label="Search products"
-              />
-
-              {query.trim().length > 0 && (
-                <button
-                  type="button"
-                  className="search-clear-btn"
-                  onClick={() => {
-                    setQuery('');
-                    setSearchFocused(false);
-                  }}
-                  aria-label="Clear search query"
-                  title="Clear search"
-                >
-                  <X size={13} />
-                </button>
-              )}
-            </form>
-
-            {searchFocused && query.trim().length > 0 && (
-              <div className="search-dropdown">
-                <div className="search-dropdown-header">
-                  <span>Matching Products</span>
-                  <span className="search-count-badge">
-                    {visibleProducts.length} {visibleProducts.length === 1 ? 'result' : 'results'}
-                  </span>
-                </div>
-
-                {searchSuggestions.length > 0 ? (
-                  <div className="search-dropdown-list">
-                    {searchSuggestions.map((item) => (
-                      <div
-                        key={item.id || item._id}
-                        className="search-item"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setSelectedProduct(item);
-                          setSearchFocused(false);
-                        }}
-                      >
-                        <div className="search-item-img">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                          <span className="search-item-fallback">{item.emoji}</span>
-                        </div>
-                        <div className="search-item-info">
-                          <span className="search-item-title">{item.name}</span>
-                          <span className="search-item-sub">
-                            by {item.vendor} · <span className="search-item-cat">{item.category}</span>
-                          </span>
-                        </div>
-                        <span className="search-item-price">{money(item.price)}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="search-no-results">
-                    <p>No products matching &ldquo;{query}&rdquo;</p>
-                    <small>Try searching headphones, sneakers, mug, lamp, or serum</small>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  className="search-dropdown-footer"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setSearchFocused(false);
-                    goToShop();
-                  }}
-                >
-                  View all {visibleProducts.length} results in store <ArrowUpRight size={13} />
-                </button>
-              </div>
-            )}
-          </div>
+              placeholder="Search products, brands and more…"
+              aria-label="Search products"
+            />
+          </label>
 
           <div className="nav-actions">
 
             <button
               className={`icon-btn ${
                 showWishlist ? 'selected' : ''
-              } ${wishlistBump ? 'wishlist-bump' : ''}`}
+              }`}
               onClick={() => {
                 setShowWishlist((v) => !v);
                 goToShop();
@@ -528,39 +222,17 @@ export default function App() {
               title="Wishlist"
               aria-label="Wishlist"
             >
-              <Heart
-                size={18}
-                fill={wishlist.length > 0 ? '#ef4444' : 'none'}
-                color={wishlist.length > 0 ? '#ef4444' : 'currentColor'}
-              />
-              {wishlist.length > 0 && (
-                <span className={`wishlist-count ${wishlistBump ? 'badge-bump' : ''}`}>
-                  {wishlist.length}
-                </span>
-              )}
+              <Heart size={18} />
             </button>
 
-            {/* ADDED: account icon (also visible on mobile) */}
-            <Link
-              className="icon-btn"
-              to={user ? accountPath : '/login'}
-              title={accountLabel}
-              aria-label={accountLabel}
-            >
-              <User size={18} />
-            </Link>
-
             <button
-              className={`icon-btn cart-icon ${cartBump ? 'cart-bump' : ''}`}
-              onClick={() => {
-                if (checkoutStep === 'success') setCheckoutStep('cart');
-                setShowCart(true);
-              }}
+              className="icon-btn cart-icon"
+              onClick={() => setShowCart(true)}
               title="Open cart"
               aria-label="Open cart"
             >
               <ShoppingBag size={18} />
-              <span className={`cart-count ${cartBump ? 'badge-bump' : ''}`}>
+              <span className="cart-count">
                 {cartCount}
               </span>
             </button>
@@ -679,7 +351,7 @@ export default function App() {
           </div>
         </section>
 
-                {/* CATEGORIES */}
+        {/* CATEGORIES */}
         <section
           className="container"
           id="categories"
@@ -739,60 +411,19 @@ export default function App() {
 
             <div>
               <h2>
-                {query.trim() ? (
-                  <>
-                    Search results for &ldquo;{query.trim()}&rdquo;{' '}
-                    <span className="spark">🔍</span>
-                  </>
-                ) : showWishlist ? (
-                  <>
-                    Your wishlist <span className="spark">✳</span>
-                  </>
-                ) : category === 'All' ? (
-                  <>
-                    Trending right now <span className="spark">✳</span>
-                  </>
-                ) : (
-                  <>
-                    {category} picks <span className="spark">✳</span>
-                  </>
-                )}
+                {showWishlist
+                  ? 'Your wishlist'
+                  : category === 'All'
+                  ? 'Trending right now'
+                  : `${category} picks`}{' '}
+                <span className="spark">✳</span>
               </h2>
 
               <p>
-                {query.trim()
-                  ? `Found ${visibleProducts.length} ${visibleProducts.length === 1 ? 'product' : 'products'} matching your search.`
-                  : showWishlist
+                {showWishlist
                   ? 'Your saved finds, all in one place.'
                   : `${visibleProducts.length} handpicked finds from independent sellers and brands.`}
               </p>
-
-              {query.trim() && (
-                <div className="search-active-pill-row">
-                  <span className="search-pill">
-                    Query: <strong>&ldquo;{query.trim()}&rdquo;</strong>
-                    <button
-                      type="button"
-                      onClick={() => setQuery('')}
-                      aria-label="Clear search"
-                      title="Clear search"
-                    >
-                      <X size={12} />
-                    </button>
-                  </span>
-                  <button
-                    type="button"
-                    className="clear-all-text"
-                    onClick={() => {
-                      setQuery('');
-                      setCategory('All');
-                      setFilter('All');
-                    }}
-                  >
-                    Clear search
-                  </button>
-                </div>
-              )}
             </div>
 
             <div className="toolbar">
@@ -865,7 +496,6 @@ export default function App() {
                 <article
                   className="product-card"
                   key={p.id}
-                  onClick={() => setSelectedProduct(p)}
                 >
 
                   <div
@@ -877,31 +507,32 @@ export default function App() {
                     </span>
 
                     <button
-                      className={`wish ${isWishlisted(p) ? 'liked' : ''} ${recentlyWishlisted[p.id] ? 'animating' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist(p.id);
-                      }}
+                      className={`wish ${
+                        wishlist.includes(p.id)
+                          ? 'liked'
+                          : ''
+                      }`}
+                      onClick={() =>
+                        toggleWishlist(p.id)
+                      }
                       aria-label={`Toggle wishlist for ${p.name}`}
-                      title={isWishlisted(p) ? 'Remove from wishlist' : 'Save to wishlist'}
                     >
                       <Heart
                         size={17}
-                        className={recentlyWishlisted[p.id] ? 'heart-icon-pop' : ''}
-                        fill={isWishlisted(p) ? '#ef4444' : 'none'}
-                        color={isWishlisted(p) ? '#ef4444' : 'currentColor'}
+                        fill={
+                          wishlist.includes(p.id)
+                            ? 'currentColor'
+                            : 'none'
+                        }
                       />
                     </button>
 
                     <div className="product-art">
-                      <img
-                        src={p.image}
-                        alt={p.name}
-                        onError={(e) => {
-                          e.currentTarget.style.display =
-                            'none';
-                        }}
-                      />
+                      {p.image ? (
+                        <img src={p.image} alt={p.name} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      ) : (
+                        <span className="product-emoji" role="img" aria-label={p.name}>{p.emoji || '🛍️'}</span>
+                      )}
                     </div>
                   </div>
 
@@ -936,22 +567,13 @@ export default function App() {
                       </div>
 
                       <button
-                        className={`add-btn ${recentlyAdded[p.id] ? 'added' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToCart(p.id);
-                        }}
+                        className="add-btn"
+                        onClick={() =>
+                          addToCart(p.id)
+                        }
                         aria-label={`Add ${p.name} to cart`}
-                        title={recentlyAdded[p.id] ? 'Added!' : 'Add to cart'}
                       >
-                        {recentlyAdded[p.id] ? (
-                          <>
-                            <Check size={18} strokeWidth={3} />
-                            <span className="plus-one-float">+1</span>
-                          </>
-                        ) : (
-                          <Plus size={19} />
-                        )}
+                        <Plus size={19} />
                       </button>
 
                     </div>
@@ -968,17 +590,13 @@ export default function App() {
                 </div>
 
                 <strong>
-                  {query.trim()
-                    ? `No products found for "${query.trim()}".`
-                    : showWishlist
+                  {showWishlist
                     ? 'Your wishlist is empty.'
                     : 'No matches just yet.'}
                 </strong>
 
                 <p>
-                  {query.trim()
-                    ? 'Check your spelling or try searching for keywords like headphones, sneakers, mug, or serum.'
-                    : showWishlist
+                  {showWishlist
                     ? 'Tap the heart on any product to save it here.'
                     : 'Try another search or clear your filters.'}
                 </p>
@@ -1059,14 +677,7 @@ export default function App() {
             </div>
 
             {/* CENTER — MAKEUP PRODUCT IMAGE */}
-            <div
-              className="spotlight-product-image"
-              onClick={() => {
-                const prod = productList.find((p) => String(p.id) === '13' || String(p.legacyId) === '13') || products.find((p) => p.id === 13);
-                if (prod) setSelectedProduct(prod);
-              }}
-              title="Click to view full details"
-            >
+            <div className="spotlight-product-image">
 
               <span className="spotlight-tag">
                 BEAUTY PICK
@@ -1086,24 +697,12 @@ export default function App() {
                 Sponsored <span>ⓘ</span>
               </span>
 
-              <h2
-                onClick={() => {
-                  const prod = productList.find((p) => String(p.id) === '13' || String(p.legacyId) === '13') || products.find((p) => p.id === 13);
-                  if (prod) setSelectedProduct(prod);
-                }}
-                title="Click to view full details"
-              >
+              <h2>
                 Everyday Glow Makeup Set,
                 Beauty Essentials for Your Daily Look
               </h2>
 
-              <div
-                className="spotlight-rating"
-                onClick={() => {
-                  const prod = productList.find((p) => String(p.id) === '13' || String(p.legacyId) === '13') || products.find((p) => p.id === 13);
-                  if (prod) setSelectedProduct(prod);
-                }}
-              >
+              <div className="spotlight-rating">
 
                 <strong>4.6</strong>
 
@@ -1111,9 +710,9 @@ export default function App() {
                   ★★★★★
                 </span>
 
-                <span className="spotlight-reviews-link">
+                <a href="#reviews">
                   (428)
-                </span>
+                </a>
 
               </div>
 
@@ -1144,22 +743,11 @@ export default function App() {
               </p>
 
               <button
-                className={`spotlight-btn ${recentlyAdded[13] ? 'added' : ''}`}
-                onClick={() => addToCart(13)}
-                aria-label="Add Everyday Glow Makeup Set to cart"
-                title={recentlyAdded[13] ? 'Added to cart!' : 'Add to cart'}
+                className="spotlight-btn"
+                onClick={() => addToCart(4)}
               >
-                {recentlyAdded[13] ? (
-                  <>
-                    <Check size={16} strokeWidth={2.5} />
-                    Added to cart!
-                  </>
-                ) : (
-                  <>
-                    Add to cart
-                    <ArrowUpRight size={16} />
-                  </>
-                )}
+                Add to cart
+                <ArrowUpRight size={16} />
               </button>
 
             </div>
@@ -1199,11 +787,6 @@ export default function App() {
               Become a seller
             </a>
 
-            {/* ADDED: account link */}
-            <Link to={user ? accountPath : '/login'}>
-              {user ? 'My account' : 'Sign in'}
-            </Link>
-
             <a
               href="#home"
               onClick={(e) => {
@@ -1229,7 +812,6 @@ export default function App() {
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
               setShowCart(false);
-              if (checkoutStep === 'success') setCheckoutStep('cart');
             }
           }}
         >
@@ -1241,357 +823,162 @@ export default function App() {
           >
 
             <div className="drawer-head">
+
               <h2>
-                {checkoutStep === 'cart' && (
-                  <>Your cart <span>({cartCount})</span></>
-                )}
-                {checkoutStep === 'shipping' && (
-                  <>Checkout <span>· Delivery</span></>
-                )}
-                {checkoutStep === 'success' && (
-                  <>Order Placed <span>· Confirmed</span></>
-                )}
+                Your cart{' '}
+                <span>
+                  ({cartCount})
+                </span>
               </h2>
 
               <button
                 className="close-btn"
-                onClick={() => {
-                  setShowCart(false);
-                  if (checkoutStep === 'success') setCheckoutStep('cart');
-                }}
+                onClick={() => setShowCart(false)}
                 aria-label="Close cart"
               >
                 <X size={20} />
               </button>
+
             </div>
 
-            {/* STEP 1: CART ITEMS */}
-            {checkoutStep === 'cart' && (
-              <>
-                <div className="cart-items">
-                  {cartEntries.length ? (
-                    cartEntries.map(({ product: p, qty }) => (
-                      <div className="cart-item" key={p.id}>
-                        <div className="cart-thumb">{p.emoji}</div>
-                        <div className="cart-item-details">
-                          <strong>{p.name}</strong>
-                          <small>{p.vendor}</small>
-                          <div className="qty">
-                            <button
-                              onClick={() => updateQty(p.id, -1)}
-                              aria-label="Decrease quantity"
-                            >
-                              <Minus size={12} />
-                            </button>
-                            <span>{qty}</span>
-                            <button
-                              onClick={() => updateQty(p.id, 1)}
-                              aria-label="Increase quantity"
-                            >
-                              <Plus size={12} />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="cart-item-price">
-                          {money(p.price * qty)}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="empty-cart">
-                      <div>🛍️</div>
-                      <strong>Your cart is taking a little break.</strong>
-                      <p>Find something you love and add it here.</p>
-                    </div>
-                  )}
-                </div>
+            <div className="cart-items">
 
-                {cartEntries.length > 0 && (
-                  <div className="cart-total">
-                    <div className="total-line">
-                      <span>Subtotal</span>
-                      <span>{money(subtotal)}</span>
-                    </div>
-
-                    <div className="total-line">
-                      <span>
-                        Shipping {shipping === 0 ? '· free over ₹999' : ''}
-                      </span>
-                      <span>{shipping ? money(shipping) : 'FREE'}</span>
-                    </div>
-
-                    <div className="total-line grand">
-                      <span>Total</span>
-                      <span>{money(subtotal + shipping)}</span>
-                    </div>
-
-                    <button
-                      className="checkout-btn"
-                      onClick={handleCheckout}
+              {cartEntries.length ? (
+                cartEntries.map(
+                  ({ product: p, qty }) => (
+                    <div
+                      className="cart-item"
+                      key={p.id}
                     >
-                      Proceed to Delivery
-                      <ArrowUpRight size={16} />
-                    </button>
 
-                    <p className="demo-note">
-                      🔒 100% Secure Checkout · Live order saved in MongoDB database.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
+                      <div className="cart-thumb">
+                        {p.emoji}
+                      </div>
 
-            {/* STEP 2: SHIPPING DETAILS & PAYMENT SELECTION */}
-            {checkoutStep === 'shipping' && (
-              <div className="checkout-step-container">
-                <div className="checkout-step-head">
-                  <h3>1. Delivery Address</h3>
-                  <p>Enter where you'd like your order delivered</p>
+                      <div className="cart-item-details">
+
+                        <strong>
+                          {p.name}
+                        </strong>
+
+                        <small>
+                          {p.vendor}
+                        </small>
+
+                        <div className="qty">
+
+                          <button
+                            onClick={() =>
+                              updateQty(
+                                p.id,
+                                -1
+                              )
+                            }
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={12} />
+                          </button>
+
+                          <span>
+                            {qty}
+                          </span>
+
+                          <button
+                            onClick={() =>
+                              updateQty(
+                                p.id,
+                                1
+                              )
+                            }
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={12} />
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                      <div className="cart-item-price">
+                        {money(
+                          p.price * qty
+                        )}
+                      </div>
+
+                    </div>
+                  )
+                )
+              ) : (
+                <div className="empty-cart">
+
+                  <div>🛍️</div>
+
+                  <strong>
+                    Your cart is taking a little break.
+                  </strong>
+
+                  <p>
+                    Find something you love and add it
+                    here.
+                  </p>
+
+                </div>
+              )}
+
+            </div>
+
+            {cartEntries.length > 0 && (
+              <div className="cart-total">
+
+                <div className="total-line">
+                  <span>Subtotal</span>
+                  <span>
+                    {money(subtotal)}
+                  </span>
                 </div>
 
-                <div className="checkout-form-grid">
-                  <div className="checkout-field full">
-                    <label>Full Name</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Rasesh Kumar"
-                      value={shippingAddress.fullName}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, fullName: e.target.value })}
-                    />
-                  </div>
+                <div className="total-line">
+                  <span>
+                    Shipping{' '}
+                    {shipping === 0
+                      ? '· free over ₹999'
+                      : ''}
+                  </span>
 
-                  <div className="checkout-field full">
-                    <label>Phone Number</label>
-                    <input
-                      type="tel"
-                      placeholder="e.g. 9876543210"
-                      value={shippingAddress.phone}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="checkout-field full">
-                    <label>Street Address / Flat No.</label>
-                    <textarea
-                      rows={2}
-                      placeholder="Building, street, landmark..."
-                      value={shippingAddress.line1}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, line1: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="checkout-field">
-                    <label>City</label>
-                    <input
-                      type="text"
-                      value={shippingAddress.city}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="checkout-field">
-                    <label>Pincode</label>
-                    <input
-                      type="text"
-                      value={shippingAddress.pincode}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
-                    />
-                  </div>
+                  <span>
+                    {shipping
+                      ? money(shipping)
+                      : 'FREE'}
+                  </span>
                 </div>
 
-                {/* PAYMENT METHOD SELECTION */}
-                <div className="checkout-step-head" style={{ marginTop: '0.5rem' }}>
-                  <h3>2. Payment Method</h3>
-                  <p>Choose Cash on Delivery or Online UPI Payment</p>
-                </div>
+                <div className="total-line grand">
+                  <span>Total</span>
 
-                <div className="payment-options-grid">
-                  <button
-                    type="button"
-                    className={`payment-card ${paymentMethod === 'cod' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('cod')}
-                  >
-                    <div className="payment-card-top">
-                      <span>💵 Cash on Delivery</span>
-                      {paymentMethod === 'cod' && <Check size={15} color="#1769ff" strokeWidth={3} />}
-                    </div>
-                    <span className="payment-card-sub">Pay at doorstep via cash/UPI</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`payment-card ${paymentMethod === 'upi' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('upi')}
-                  >
-                    <div className="payment-card-top">
-                      <span>⚡ Online UPI</span>
-                      {paymentMethod === 'upi' && <Check size={15} color="#1769ff" strokeWidth={3} />}
-                    </div>
-                    <span className="payment-card-sub">GPay, PhonePe, Paytm, BHIM</span>
-                  </button>
-                </div>
-
-                {/* UPI OPTIONS ACCORDION */}
-                {paymentMethod === 'upi' && (
-                  <div className="upi-details-box">
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155' }}>
-                      Select Instant UPI App:
-                    </div>
-                    <div className="upi-apps-row">
-                      <button
-                        type="button"
-                        className={`upi-app-chip ${selectedUpiApp === 'gpay' ? 'selected' : ''}`}
-                        onClick={() => setSelectedUpiApp('gpay')}
-                      >
-                        Google Pay
-                      </button>
-                      <button
-                        type="button"
-                        className={`upi-app-chip ${selectedUpiApp === 'phonepe' ? 'selected' : ''}`}
-                        onClick={() => setSelectedUpiApp('phonepe')}
-                      >
-                        PhonePe
-                      </button>
-                      <button
-                        type="button"
-                        className={`upi-app-chip ${selectedUpiApp === 'paytm' ? 'selected' : ''}`}
-                        onClick={() => setSelectedUpiApp('paytm')}
-                      >
-                        Paytm
-                      </button>
-                      <button
-                        type="button"
-                        className={`upi-app-chip ${selectedUpiApp === 'bhim' ? 'selected' : ''}`}
-                        onClick={() => setSelectedUpiApp('bhim')}
-                      >
-                        BHIM UPI
-                      </button>
-                    </div>
-
-                    <div className="upi-input-group">
-                      <input
-                        type="text"
-                        placeholder="Or enter UPI ID (e.g. mobile@upi)"
-                        value={upiId}
-                        onChange={(e) => setUpiId(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="upi-verify-tag">
-                      <Check size={13} />
-                      <span>Zero transaction fees · Instant online confirmation</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="checkout-summary-bar">
-                  <span>Payable amount ({cartCount} items):</span>
-                  <strong>{money(subtotal + shipping)}</strong>
-                </div>
-
-                <div className="checkout-actions-row">
-                  <button
-                    type="button"
-                    className="outline-btn"
-                    onClick={() => setCheckoutStep('cart')}
-                  >
-                    ← Back to Cart
-                  </button>
-
-                  <button
-                    type="button"
-                    className="checkout-btn"
-                    disabled={isCheckingOut}
-                    onClick={submitOrder}
-                  >
-                    {isCheckingOut ? (
-                      paymentMethod === 'upi' ? 'Authorizing UPI Payment…' : 'Placing Order…'
-                    ) : (
-                      paymentMethod === 'upi' ? `Pay ${money(subtotal + shipping)} via UPI ➔` : 'Place Order (Cash on Delivery)'
+                  <span>
+                    {money(
+                      subtotal + shipping
                     )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: ORDER SUCCESS CELEBRATION */}
-            {checkoutStep === 'success' && (
-              <div className="order-success-screen">
-                <div className="success-icon-ring">
-                  <Check size={36} strokeWidth={3} />
+                  </span>
                 </div>
 
-                <h3>Order Confirmed! 🎉</h3>
-                <p className="order-success-sub">
-                  Your order has been recorded in our MongoDB database and sent to sellers!
+                <button
+                  className="checkout-btn"
+                  onClick={() =>
+                    notify(
+                      'Checkout preview only — backend integration comes next'
+                    )
+                  }
+                >
+                  Continue to checkout
+                  <ArrowUpRight size={16} />
+                </button>
+
+                <p className="demo-note">
+                  Demo checkout · Payment and order
+                  processing are not connected yet.
                 </p>
 
-                <div className="order-success-card">
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>
-                      Order Tracking ID
-                    </span>
-                    <span className="order-id-badge">
-                      {confirmedOrder?.orderNumber}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>
-                      Shipping Address
-                    </span>
-                    <strong>{confirmedOrder?.shippingAddress?.fullName}</strong> ({confirmedOrder?.shippingAddress?.phone})
-                    <div style={{ color: '#475569', fontSize: '0.82rem' }}>
-                      {confirmedOrder?.shippingAddress?.line1}, {confirmedOrder?.shippingAddress?.city} - {confirmedOrder?.shippingAddress?.pincode}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>
-                      Payment Method & Status
-                    </span>
-                    {confirmedOrder?.paymentMethod === 'upi' ? (
-                      <strong style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Check size={15} strokeWidth={3} />
-                        Online UPI — {money(confirmedOrder?.totalAmount || 0)} (Paid & Verified ✓)
-                      </strong>
-                    ) : (
-                      <strong>
-                        Cash on Delivery — {money(confirmedOrder?.totalAmount || 0)} (Pay at doorstep)
-                      </strong>
-                    )}
-                  </div>
-
-                  <div>
-                    <span style={{ color: '#059669', fontSize: '0.82rem', fontWeight: 600 }}>
-                      🚚 Free Express Delivery (2-3 Business Days)
-                    </span>
-                  </div>
-                </div>
-
-                <div className="order-success-actions">
-                  <Link
-                    to={user ? accountPath : '/login'}
-                    className="primary-btn"
-                    onClick={() => {
-                      setShowCart(false);
-                      setCheckoutStep('cart');
-                    }}
-                  >
-                    View in My Orders →
-                  </Link>
-
-                  <button
-                    type="button"
-                    className="outline-btn"
-                    onClick={() => {
-                      setShowCart(false);
-                      setCheckoutStep('cart');
-                    }}
-                  >
-                    Continue Shopping
-                  </button>
-                </div>
               </div>
             )}
 
@@ -1606,7 +993,6 @@ export default function App() {
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
               setShowSeller(false);
-              setSellerSubmitted(false);
             }
           }}
         >
@@ -1618,222 +1004,133 @@ export default function App() {
           >
 
             <div className="modal-head">
+
               <div>
+
                 <h2 id="seller-title">
-                  {sellerSubmitted ? 'Application Submitted! 🎉' : 'Start selling on SwiftCart'}
+                  Start selling on SwiftCart
                 </h2>
+
                 <p>
-                  {sellerSubmitted
-                    ? 'Your brand application has been saved to our MongoDB database.'
-                    : 'Join over 1,500+ independent brands and creators selling on SwiftCart.'}
+                  Tell us a little about your brand.
+                  This demo form previews seller onboarding.
                 </p>
+
               </div>
 
               <button
                 className="close-btn"
-                onClick={() => {
-                  setShowSeller(false);
-                  setSellerSubmitted(false);
-                }}
+                onClick={() =>
+                  setShowSeller(false)
+                }
                 aria-label="Close form"
               >
                 <X size={20} />
               </button>
+
             </div>
 
-            {!sellerSubmitted ? (
-              <form onSubmit={handleSellerSubmit}>
-                <label htmlFor="brand">
-                  Brand / store name *
-                </label>
-                <input
-                  id="brand"
-                  required
-                  value={sellerForm.brand}
-                  onChange={(e) =>
-                    setSellerForm({
-                      ...sellerForm,
-                      brand: e.target.value
-                    })
-                  }
-                  placeholder="e.g. The Everyday Studio"
-                />
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
 
-                <label htmlFor="email">
-                  Business email *
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={sellerForm.email}
-                  onChange={(e) =>
-                    setSellerForm({
-                      ...sellerForm,
-                      email: e.target.value
-                    })
-                  }
-                  placeholder="you@yourbrand.com"
-                />
+                setShowSeller(false);
 
-                <label htmlFor="phone">
-                  Contact phone (optional)
-                </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={sellerForm.phone}
-                  onChange={(e) =>
-                    setSellerForm({
-                      ...sellerForm,
-                      phone: e.target.value
-                    })
-                  }
-                  placeholder="e.g. 9876543210"
-                />
+                notify(
+                  `Application preview ready for ${sellerForm.brand} — backend not connected`
+                );
 
-                <label htmlFor="seller-category">
-                  Main product category *
-                </label>
-                <select
-                  id="seller-category"
-                  value={sellerForm.category}
-                  onChange={(e) =>
-                    setSellerForm({
-                      ...sellerForm,
-                      category: e.target.value
-                    })
-                  }
-                >
-                  <option>Fashion</option>
-                  <option>Tech & gadgets</option>
-                  <option>Home & living</option>
-                  <option>Beauty</option>
-                  <option>Lifestyle</option>
-                  <option>Handcrafted & Artisanal</option>
-                  <option>Other</option>
-                </select>
+                setSellerForm({
+                  brand: '',
+                  email: '',
+                  category: 'Fashion'
+                });
+              }}
+            >
 
-                <label htmlFor="description">
-                  Tell us about your brand / products (optional)
-                </label>
-                <textarea
-                  id="description"
-                  rows={2}
-                  value={sellerForm.description}
-                  onChange={(e) =>
-                    setSellerForm({
-                      ...sellerForm,
-                      description: e.target.value
-                    })
-                  }
-                  placeholder="What makes your products unique? (e.g. organic fabrics, handcrafted ceramics...)"
-                />
+              <label htmlFor="brand">
+                Brand / store name
+              </label>
 
-                <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="outline-btn"
-                    onClick={() =>
-                      setShowSeller(false)
-                    }
-                  >
-                    Maybe later
-                  </button>
+              <input
+                id="brand"
+                required
+                value={sellerForm.brand}
+                onChange={(e) =>
+                  setSellerForm({
+                    ...sellerForm,
+                    brand: e.target.value
+                  })
+                }
+                placeholder="e.g. The Everyday Studio"
+              />
 
-                  <button
-                    className="primary-btn"
-                    type="submit"
-                    disabled={isSubmittingSeller}
-                  >
-                    {isSubmittingSeller ? 'Submitting Application…' : 'Submit Application'}
-                    <ArrowUpRight size={15} />
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="seller-success-screen">
-                <div className="success-icon-ring">
-                  <Check size={36} strokeWidth={3} />
-                </div>
+              <label htmlFor="email">
+                Business email
+              </label>
 
-                <h3>Thank You, {submittedBrand}! 🎉</h3>
-                <p style={{ color: '#64748b', fontSize: '0.85rem', lineHeight: 1.45, maxWidth: '360px', margin: '0 auto 1rem' }}>
-                  Your seller onboarding application has been successfully recorded in our MongoDB database!
-                </p>
+              <input
+                id="email"
+                type="email"
+                required
+                value={sellerForm.email}
+                onChange={(e) =>
+                  setSellerForm({
+                    ...sellerForm,
+                    email: e.target.value
+                  })
+                }
+                placeholder="you@yourbrand.com"
+              />
 
-                <div className="seller-success-card">
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
-                      Brand Name
-                    </span>
-                    <strong>{submittedBrand}</strong>
-                  </div>
+              <label htmlFor="seller-category">
+                Main product category
+              </label>
 
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
-                      Category & Email
-                    </span>
-                    <span>{sellerForm.category} · {sellerForm.email}</span>
-                  </div>
+              <select
+                id="seller-category"
+                value={sellerForm.category}
+                onChange={(e) =>
+                  setSellerForm({
+                    ...sellerForm,
+                    category: e.target.value
+                  })
+                }
+              >
+                <option>Fashion</option>
+                <option>Tech & gadgets</option>
+                <option>Home & living</option>
+                <option>Beauty</option>
+                <option>Lifestyle</option>
+                <option>Other</option>
+              </select>
 
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
-                      Application Status
-                    </span>
-                    <span style={{ color: '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <Check size={13} /> Under Review (Response within 24-48 hrs)
-                    </span>
-                  </div>
-                </div>
+              <div className="modal-actions">
 
                 <button
                   type="button"
-                  className="primary-btn full-width"
-                  style={{ width: '100%', padding: '0.85rem' }}
-                  onClick={() => {
-                    setShowSeller(false);
-                    setSellerSubmitted(false);
-                    setSellerForm({
-                      brand: '',
-                      email: '',
-                      phone: '',
-                      category: 'Fashion',
-                      description: '',
-                    });
-                  }}
+                  className="outline-btn"
+                  onClick={() =>
+                    setShowSeller(false)
+                  }
                 >
-                  Done · Back to Store
+                  Maybe later
                 </button>
+
+                <button
+                  className="primary-btn"
+                  type="submit"
+                >
+                  Preview application
+                  <ArrowUpRight size={15} />
+                </button>
+
               </div>
-            )}
+
+            </form>
 
           </section>
         </div>
-      )}
-
-      {/* AMAZON-STYLE PRODUCT DETAIL MODAL */}
-      {selectedProduct && (
-        <ProductDetailModal
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onAddToCart={(productId, qty, color) => {
-            for (let i = 0; i < qty; i++) {
-              addToCart(productId);
-            }
-            notify(`Added ${qty} × ${selectedProduct.name} (${color}) to your cart!`);
-          }}
-          onBuyNow={(productId, qty, color) => {
-            for (let i = 0; i < qty; i++) {
-              addToCart(productId);
-            }
-            setSelectedProduct(null);
-            setShowCart(true);
-            setCheckoutStep('shipping');
-          }}
-          isWishlisted={isWishlisted(selectedProduct)}
-          onToggleWishlist={() => toggleWishlist(selectedProduct.id)}
-        />
       )}
 
       {/* TOAST */}

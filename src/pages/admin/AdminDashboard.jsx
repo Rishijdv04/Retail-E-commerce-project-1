@@ -1,158 +1,39 @@
-import { useEffect, useState } from 'react';
-import apiClient from '../../services/api';
-import { Link, useNavigate } from 'react-router';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-import { Trash2, Wand2 } from 'lucide-react';
-import Field from '../../components/auth/Field';
+import { Link } from 'react-router';
 import { useAuth } from '../../store/authStore';
-import { newUserSchema } from '../auth/schemas';
+import { products } from '../../data/products';
+import { ArrowLeft, ArrowUpRight, Box, ClipboardList, ShieldCheck, Users } from 'lucide-react';
 
-const tryDo = async (fn) => { try { await fn(); } catch (e) { toast.error(e.message); } };
-const generate = () => {
-  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-  const r = crypto.getRandomValues(new Uint32Array(10));
-  return Array.from(r, (n) => c[n % c.length]).join('') + 'aA7';
-};
-
-function AddUser() {
-  const { createUser } = useAuth();
-  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(newUserSchema), defaultValues: { role: 'customer' },
-  });
-  return (
-    <form className="scx-addrform" noValidate onSubmit={handleSubmit(async (d) => {
-      try { await createUser(d); toast.success(`${d.name} added. Share the password with them securely.`); reset({ role: 'customer' }); }
-      catch (e) { toast.error(e.message); }
-    })}>
-      <Field label="Full name" error={errors.name?.message} {...register('name')} />
-      <Field label="Email" type="email" error={errors.email?.message} {...register('email')} />
-      <Field label="Password" type="password" hint="Or generate a strong one" error={errors.password?.message} {...register('password')} />
-      <label className="scx-field">
-        <span className="scx-label">Role</span>
-        <select {...register('role')}><option value="customer">Customer</option><option value="vendor">Vendor</option><option value="admin">Admin</option></select>
-      </label>
-      <div className="scx-actions">
-        <button className="scx-btn" disabled={isSubmitting}>Add user</button>
-        <button type="button" className="scx-btn scx-ghost" onClick={() => { const p = generate(); setValue('password', p, { shouldValidate: true }); navigator.clipboard?.writeText(p); toast('Password generated and copied'); }}>
-          <Wand2 size={16} /> Generate password
-        </button>
-      </div>
-    </form>
-  );
-}
+const money = (value) => `₹${value.toLocaleString('en-IN')}`;
 
 export default function AdminDashboard() {
-  const { user, users, loadUsers, setRole, setStatus, removeUser, logout } = useAuth();
-  const nav = useNavigate();
-  const [stats, setStats] = useState(null);
-  const [orders, setOrders] = useState([]);
-  const [applications, setApplications] = useState([]);
+  const user = useAuth((s) => s.user);
+  const logout = useAuth((s) => s.logout);
+  const stats = [
+    { label: 'Gross sales', value: '₹1,28,450', note: '+12.8% this month', icon: ArrowUpRight },
+    { label: 'Orders', value: '248', note: '18 awaiting dispatch', icon: ClipboardList },
+    { label: 'Active products', value: String(products.length), note: 'Across independent makers', icon: Box },
+    { label: 'Customers', value: '1,840', note: '+8.4% this month', icon: Users },
+  ];
 
-  useEffect(() => {
-    loadUsers();
-    apiClient.get('/admin/stats').then(res => setStats(res.data?.stats)).catch(console.warn);
-    apiClient.get('/orders').then(res => setOrders(res.data?.orders || [])).catch(console.warn);
-    apiClient.get('/sellers/applications').then(res => setApplications(res.data?.applications || [])).catch(console.warn);
-  }, [loadUsers]);
-  const count = (r) => users.filter((u) => u.role === r).length;
   return (
-    <main className="scx-page scx-wide scx-admin">
-      <section className="scx-card scx-card-wide">
-        <header className="scx-head">
-          <div><h1>Admin dashboard</h1><p className="scx-sub">Signed in as {user.email}</p></div>
-          <div className="scx-actions">
-            <Link className="scx-btn scx-ghost" to="/">View store</Link>
-            <button className="scx-btn scx-ghost" onClick={() => { logout(); nav('/admin/login'); }}>Sign out</button>
-          </div>
+    <main className="admin-page">
+      <div className="admin-shell">
+        <header className="admin-header">
+          <Link className="brand" to="/"><span className="brand-mark">↗</span> swift<span>cart</span></Link>
+          <div className="admin-header-right"><span>Admin · {user?.name || 'Store manager'}</span><button onClick={logout}>Sign out</button></div>
         </header>
-        <div className="scx-stats">
-          <div><b>₹{(stats?.totalRevenue || 0).toLocaleString('en-IN')}</b>Total revenue</div>
-          <div><b>{stats?.totalOrders ?? orders.length}</b>Total orders</div>
-          <div><b>{stats?.totalProducts || 12}</b>Products in catalog</div>
-          <div><b>{users.length}</b>Registered users</div>
-        </div>
-        <h2>Add a user</h2>
-        <AddUser />
-        <h2>All users</h2>
-        <div className="scx-table">
-          <table>
-            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th><span className="scx-sr">Actions</span></th></tr></thead>
-            <tbody>
-              {users.map((u) => {
-                const me = u.id === user.id;
-                return (
-                  <tr key={u.id}>
-                    <td>{u.name}{me && <span className="scx-pill">You</span>}</td>
-                    <td>{u.email}</td>
-                    <td>
-                      <select value={u.role} disabled={me} aria-label={`Role for ${u.name}`} onChange={(e) => tryDo(() => setRole(u.id, e.target.value))}>
-                        <option value="customer">Customer</option><option value="vendor">Vendor</option><option value="admin">Admin</option>
-                      </select>
-                    </td>
-                    <td>
-                      <button className={`scx-switch ${u.status === 'active' ? 'on' : ''}`} disabled={me} role="switch" aria-checked={u.status === 'active'}
-                        onClick={() => tryDo(() => setStatus(u.id, u.status === 'active' ? 'disabled' : 'active'))}>
-                        {u.status === 'active' ? 'Active' : 'Disabled'}
-                      </button>
-                    </td>
-                    <td>
-                      <button className="scx-icon" disabled={me} aria-label={`Delete ${u.name}`}
-                        onClick={() => window.confirm(`Delete ${u.name}? This cannot be undone.`) && tryDo(() => removeUser(u.id))}>
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <h2>Recent marketplace orders ({orders.length})</h2>
-        <div className="scx-table">
-          <table>
-            <thead><tr><th>Order #</th><th>Customer / Phone</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
-            <tbody>
-              {orders.length === 0 ? (
-                <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--mute)' }}>No orders placed yet.</td></tr>
-              ) : (
-                orders.map(o => (
-                  <tr key={o.id || o._id}>
-                    <td><b>{o.orderNumber}</b></td>
-                    <td>{o.shippingAddress?.fullName || 'Customer'}<br/><span style={{ fontSize: '0.75rem', color: 'var(--mute)' }}>{o.shippingAddress?.phone}</span></td>
-                    <td>{o.items?.map(i => `${i.name} (${i.quantity})`).join(', ')}</td>
-                    <td><b>₹{o.totalAmount?.toLocaleString('en-IN')}</b></td>
-                    <td><span className="scx-pill" style={{ textTransform: 'capitalize' }}>{o.status}</span></td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <h2>Seller onboarding applications ({applications.length})</h2>
-        <div className="scx-table">
-          <table>
-            <thead><tr><th>Brand name</th><th>Business email</th><th>Category</th><th>Applied on</th><th>Status</th></tr></thead>
-            <tbody>
-              {applications.length === 0 ? (
-                <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--mute)' }}>No seller applications yet.</td></tr>
-              ) : (
-                applications.map(a => (
-                  <tr key={a.id || a._id}>
-                    <td><b>{a.brand}</b></td>
-                    <td>{a.email}</td>
-                    <td>{a.category}</td>
-                    <td>{new Date(a.createdAt).toLocaleDateString()}</td>
-                    <td><span className="scx-pill" style={{ textTransform: 'capitalize' }}>{a.status}</span></td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+        <section className="admin-intro">
+          <div><p className="admin-kicker">SWIFTCART · MARKETPLACE CONTROL</p><h1>Good morning, Admin.</h1><p>Here’s what’s happening across your marketplace today.</p></div>
+          <Link className="admin-back" to="/"><ArrowLeft size={16}/> Back to storefront</Link>
+        </section>
+        <section className="admin-stat-grid">{stats.map(({label,value,note,icon:Icon}) => <article className="admin-stat-card" key={label}><span className="admin-stat-icon"><Icon size={19}/></span><p>{label}</p><strong>{value}</strong><small>{note}</small></article>)}</section>
+        <section className="admin-lower-grid">
+          <article className="admin-panel"><div className="admin-panel-heading"><div><h2>Featured product catalogue</h2><p>Professional product photography from your storefront collection.</p></div><span className="admin-live-tag"><ShieldCheck size={13}/> Catalogue preview</span></div>
+            <div className="admin-product-list">{products.slice(0, 7).map((product) => <div className="admin-product-row" key={product.id}><img src={product.image} alt={product.name} loading="lazy"/><div className="admin-product-copy"><strong>{product.name}</strong><span>{product.vendor} · {product.category}</span></div><b>{money(product.price)}</b></div>)}</div>
+          </article>
+          <aside className="admin-panel admin-quick-panel"><h2>Quick actions</h2><p>Common marketplace management areas.</p><button><span>＋</span><div><b>Add a product</b><small>Create a new marketplace listing</small></div></button><button><span>▤</span><div><b>Manage orders</b><small>Review fulfilment and dispatch</small></div></button><button><span>♧</span><div><b>Seller approvals</b><small>Review new seller applications</small></div></button><button><span>↗</span><div><b>View analytics</b><small>Track marketplace performance</small></div></button><div className="admin-note">Dashboard preview · Connect admin APIs to manage live marketplace data.</div></aside>
+        </section>
+      </div>
     </main>
   );
 }
