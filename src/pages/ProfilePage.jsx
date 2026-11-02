@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { MapPin, Pencil, Trash2, Plus } from 'lucide-react';
+import { MapPin, Pencil, Trash2, Plus, Package } from 'lucide-react';
+import apiClient from '../services/api';
 import Field from '../components/auth/Field';
 import { useAuth } from '../store/authStore';
 import { profileSchema, passwordChangeSchema, addressSchema } from './auth/schemas';
@@ -90,11 +91,80 @@ function AddressTab() {
   );
 }
 
+function OrdersTab() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiClient
+      .get('/orders/my-orders')
+      .then((res) => {
+        setOrders(res.data?.orders || []);
+      })
+      .catch((err) => {
+        console.warn('Orders fetch error:', err.message);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="scx-loading"><p>Loading your orders…</p></div>;
+  }
+
+  if (!orders.length) {
+    return (
+      <div className="scx-empty">
+        <Package size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
+        <p>No orders placed yet.</p>
+        <p style={{ fontSize: '0.85rem', color: 'var(--mute)' }}>
+          Items you purchase will appear here with live tracking.
+        </p>
+        <Link to="/" className="scx-btn" style={{ marginTop: 12, display: 'inline-flex', width: 'auto' }}>
+          Explore Products
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: '14px' }}>
+      {orders.map((order) => (
+        <div key={order.id || order._id} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <b style={{ fontSize: '1.05rem' }}>Order #{order.orderNumber}</b>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--mute)' }}>
+                Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="scx-pill" style={{ textTransform: 'capitalize' }}>{order.status || 'Processing'}</span>
+              <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>₹{order.totalAmount?.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--line)', paddingTop: 10, display: 'grid', gap: 8 }}>
+            {order.items?.map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>{item.emoji || '🛍️'}</span>
+                  <span>{item.name} <span style={{ color: 'var(--mute)' }}>× {item.quantity}</span></span>
+                </span>
+                <span style={{ fontWeight: 600 }}>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
-  const [tab, setTab] = useState('profile');
-  const tabs = [['profile', 'Profile'], ['addresses', 'Saved addresses'], ['security', 'Password']];
+  const [tab, setTab] = useState('orders');
+  const tabs = [['orders', 'My orders'], ['profile', 'Profile'], ['addresses', 'Saved addresses'], ['security', 'Password']];
   return (
     <main className="scx-page scx-wide">
       <section className="scx-card scx-card-wide">
@@ -111,6 +181,7 @@ export default function ProfilePage() {
         <div className="scx-tabs" role="tablist">
           {tabs.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
         </div>
+        {tab === 'orders' && <OrdersTab />}
         {tab === 'profile' && <ProfileTab />}
         {tab === 'addresses' && <AddressTab />}
         {tab === 'security' && <PasswordTab />}
