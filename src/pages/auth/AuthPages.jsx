@@ -79,11 +79,6 @@ export function LoginPage() {
       <p className="auth-switch">
         New to SwiftCart? <Link to="/signup">Create an account</Link>
       </p>
-      <div className="demo-credentials">
-        <b>Demo Credentials</b><br />
-        Admin: <code>admin@swiftcart.com</code> / <code>Admin@12345</code><br />
-        Customer: <code>customer@swiftcart.com</code> / <code>Customer@123</code>
-      </div>
     </AuthShell>
   );
 }
@@ -191,7 +186,7 @@ export function ForgotPasswordPage() {
   return (
     <AuthShell title="Reset password" subtitle="Enter your email to receive password reset instructions.">
       {sent ? (
-        <div className="demo-credentials">
+        <div className="auth-alert-success" style={{ background: '#edf6e4', border: '1px solid #d5e6cb', borderRadius: '12px', padding: '14px', color: '#2b4f30', fontSize: '13px', lineHeight: '1.5' }}>
           Instructions sent to <b>{email}</b>. Please check your inbox.
         </div>
       ) : (
@@ -219,8 +214,8 @@ export function ForgotPasswordPage() {
 }
 
 export function AdminLoginPage() {
-  const [email, setEmail] = useState('admin@swiftcart.com');
-  const [password, setPassword] = useState('Admin@12345');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const login = useAuth((s) => s.login);
   const navigate = useNavigate();
@@ -251,6 +246,7 @@ export function AdminLoginPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="admin@swiftcart.com"
           />
         </label>
         <label>
@@ -261,17 +257,13 @@ export function AdminLoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter admin password"
           />
         </label>
         <button className="auth-submit" disabled={busy}>
           {busy ? 'Authenticating…' : 'Enter Admin Console'}
         </button>
       </form>
-      <div className="demo-credentials">
-        <b>Default Platform Administrator</b><br />
-        Email: <code>admin@swiftcart.com</code><br />
-        Password: <code>Admin@12345</code>
-      </div>
     </AuthShell>
   );
 }

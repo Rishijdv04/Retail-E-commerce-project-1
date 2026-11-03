@@ -215,7 +215,8 @@
   color: #17251b;
 }
 
-.demo-credentials {
+.auth-alert-success,
+.auth-info-box {
   background: rgba(240, 248, 235, 0.95);
   border: 1px solid #d5e6cb;
   border-radius: 12px;
