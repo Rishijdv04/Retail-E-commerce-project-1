@@ -24,6 +24,7 @@ export const useAuth = create((set, get) => {
     },
     signup: async (d) => setUser(await api.signup(d)),
     login: async (e, p, o) => setUser(await api.login(e, p, o)),
+    googleLogin: async (c) => setUser(await api.googleLogin(c)),
     logout: () => {
       api.logout();
       set({ user: null, users: [] });

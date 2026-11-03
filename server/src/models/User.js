@@ -40,9 +40,25 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
+    required: function () {
+      return this.authProvider === 'local' || !this.authProvider;
+    },
     minlength: [8, 'Password must be at least 8 characters'],
     select: false,
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local',
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    index: true,
+  },
+  avatar: {
+    type: String,
+    default: '',
   },
   role: {
     type: String,
@@ -92,7 +108,7 @@ const userSchema = new mongoose.Schema({
 
 // Password hashing pre-save hook
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.password || !this.isModified('password')) return next();
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../store/authStore';
+import GoogleSignInButton from '../../components/auth/GoogleSignInButton';
 
 function AuthShell({ title, subtitle, children }) {
   return (
@@ -27,6 +28,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const login = useAuth((s) => s.login);
+  const googleLogin = useAuth((s) => s.googleLogin);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,8 +46,27 @@ export function LoginPage() {
     }
   };
 
+  const handleGoogleSuccess = async (credential) => {
+    setBusy(true);
+    try {
+      const u = await googleLogin(credential);
+      toast.success(`Welcome, ${u.name}!`);
+      navigate(location.state?.from || (u.role === 'admin' ? '/admin' : '/account'), { replace: true });
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Google Sign-In failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <AuthShell title="Welcome back" subtitle="Sign in to continue to your SwiftCart account.">
+      <GoogleSignInButton onSuccess={handleGoogleSuccess} disabled={busy} />
+
+      <div className="auth-divider">
+        <span>or continue with email</span>
+      </div>
+
       <form className="auth-form" onSubmit={submit}>
         <label>
           Email address
@@ -90,6 +111,7 @@ export function SignupPage() {
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const signup = useAuth((s) => s.signup);
+  const googleLogin = useAuth((s) => s.googleLogin);
   const navigate = useNavigate();
 
   const submit = async (e) => {
@@ -108,8 +130,27 @@ export function SignupPage() {
     }
   };
 
+  const handleGoogleSuccess = async (credential) => {
+    setBusy(true);
+    try {
+      const u = await googleLogin(credential);
+      toast.success(`Welcome to SwiftCart, ${u.name}!`);
+      navigate('/account');
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Google Sign-In failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <AuthShell title="Create your account" subtitle="Join SwiftCart and keep all your favourite finds together.">
+      <GoogleSignInButton onSuccess={handleGoogleSuccess} disabled={busy} />
+
+      <div className="auth-divider">
+        <span>or continue with email</span>
+      </div>
+
       <form className="auth-form" onSubmit={submit}>
         <label>
           Full name

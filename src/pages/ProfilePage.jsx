@@ -49,8 +49,17 @@ export default function ProfilePage() {
       </div>
 
       <section className="account-card" style={{ maxWidth: activeTab === 'orders' ? '700px' : '480px' }}>
-        <div className="account-avatar">
-          <UserRound size={32} />
+        <div className="account-avatar" style={{ overflow: 'hidden' }}>
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <UserRound size={32} />
+          )}
         </div>
         <p className="eyebrow" style={{ color: '#527c35', fontWeight: 800, fontSize: '12px' }}>
           SWIFTCART ACCOUNT

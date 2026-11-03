@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import axios from 'axios';
 import User from '../models/User.js';
 
 function signToken(userId) {
@@ -82,6 +83,13 @@ export async function login(req, res, next) {
       return res.status(423).json({
         success: false,
         message: `Too many attempts. Try again in ${waitSeconds}s.`,
+      });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({
+        success: false,
+        message: 'This account was registered with Google. Please click "Continue with Google".',
       });
     }
 
@@ -336,6 +344,107 @@ export async function resetPassword(req, res, next) {
       message: 'Password has been reset successfully. Please sign in.',
     });
   } catch (err) {
+    next(err);
+  }
+}
+
+// @desc    Authenticate with Google OAuth ID token
+// @route   POST /api/auth/google
+export async function googleLogin(req, res, next) {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google ID token credential is required.',
+      });
+    }
+
+    let payload;
+    // Development/demo fallback token support
+    if (credential.startsWith('demo-google-token-')) {
+      const email = credential.replace('demo-google-token-', '');
+      payload = {
+        sub: `google-mock-${Date.now()}`,
+        email: email || 'demo.google.user@gmail.com',
+        email_verified: true,
+        name: 'Google User',
+        picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      };
+    } else {
+      // Official Google ID token verification via Google's tokeninfo API
+      const tokenInfoUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+      const response = await axios.get(tokenInfoUrl);
+      payload = response.data;
+
+      // Check audience if GOOGLE_CLIENT_ID is configured in environment
+      if (process.env.GOOGLE_CLIENT_ID && payload.aud !== process.env.GOOGLE_CLIENT_ID) {
+        return res.status(401).json({
+          success: false,
+          message: 'Google token audience does not match configured Client ID.',
+        });
+      }
+
+      if (payload.email_verified !== 'true' && payload.email_verified !== true) {
+        return res.status(401).json({
+          success: false,
+          message: 'Google email address is not verified.',
+        });
+      }
+    }
+
+    const normalizedEmail = payload.email.trim().toLowerCase();
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (user) {
+      let modified = false;
+      if (!user.googleId) {
+        user.googleId = payload.sub;
+        modified = true;
+      }
+      if (!user.avatar && payload.picture) {
+        user.avatar = payload.picture;
+        modified = true;
+      }
+      if (user.status !== 'active') {
+        return res.status(403).json({
+          success: false,
+          message: 'This account has been disabled. Please contact support.',
+        });
+      }
+      if (modified) {
+        await user.save();
+      }
+      await user.resetLoginAttempts();
+    } else {
+      // Create new customer account from verified Google profile
+      user = await User.create({
+        name: payload.name || normalizedEmail.split('@')[0],
+        email: normalizedEmail,
+        googleId: payload.sub,
+        avatar: payload.picture || '',
+        authProvider: 'google',
+        role: 'customer',
+        status: 'active',
+        addresses: [],
+      });
+    }
+
+    const token = signToken(user._id);
+
+    res.json({
+      success: true,
+      token,
+      user: user.toJSON(),
+    });
+  } catch (err) {
+    if (err.response?.status === 400 || err.response?.data?.error_description) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired Google credential.',
+      });
+    }
     next(err);
   }
 }

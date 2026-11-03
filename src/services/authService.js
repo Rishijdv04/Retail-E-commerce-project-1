@@ -60,6 +60,13 @@ export async function signup({ name, email, password }) {
   return user;
 }
 
+export async function googleLogin(credential) {
+  const res = await apiClient.post('/auth/google', { credential });
+  const { token, user } = res.data;
+  saveSession(token, user);
+  return user;
+}
+
 export async function login(emailOrObj, maybePassword, options = {}) {
   let email = emailOrObj;
   let password = maybePassword;

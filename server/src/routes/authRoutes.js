@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   signup,
   login,
+  googleLogin,
   getCurrentUser,
   updateProfile,
   changePassword,
@@ -17,6 +18,7 @@ const router = Router();
 
 router.post('/signup', authLimiter, signup);
 router.post('/login', authLimiter, login);
+router.post('/google', authLimiter, googleLogin);
 router.get('/me', protect, getCurrentUser);
 router.put('/profile', protect, updateProfile);
 router.put('/password', protect, changePassword);

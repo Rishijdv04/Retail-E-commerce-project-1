@@ -319,7 +319,7 @@ export async function seedData() {
 }
 
 // Allow direct CLI execution: node src/seed.js
-if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`) {
+if (process.argv[1] && import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`) {
   const { connectDB, disconnectDB } = await import('./config/db.js');
   await connectDB();
   await seedData();
