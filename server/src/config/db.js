@@ -27,21 +27,20 @@ export async function connectDB() {
   } catch (err) {
     console.warn(`[MongoDB] Could not connect to primary URI (${primaryUri}): ${err.message}`);
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[MongoDB] ⚡ Starting in-memory embedded MongoDB (MongoMemoryServer) for local development...');
-      try {
-        const { MongoMemoryServer } = await import('mongodb-memory-server');
-        memoryServer = await MongoMemoryServer.create();
-        const memUri = memoryServer.getUri();
-        console.log(`[MongoDB] Embedded MongoDB running at: ${memUri}`);
-        await mongoose.connect(memUri);
-        return mongoose.connection;
-      } catch (memErr) {
-        console.error('[MongoDB] Failed to start embedded MongoDB:', memErr.message);
-        throw memErr;
+    console.log('[MongoDB] ⚡ Starting in-memory embedded MongoDB (MongoMemoryServer)...');
+    try {
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      memoryServer = await MongoMemoryServer.create();
+      const memUri = memoryServer.getUri();
+      console.log(`[MongoDB] Embedded MongoDB running at: ${memUri}`);
+      await mongoose.connect(memUri);
+      return mongoose.connection;
+    } catch (memErr) {
+      console.error('[MongoDB] Failed to start embedded MongoDB:', memErr.message);
+      if (process.env.NODE_ENV === 'production' && process.env.MONGODB_URI) {
+        throw err;
       }
-    } else {
-      throw err;
+      throw memErr;
     }
   }
 }
