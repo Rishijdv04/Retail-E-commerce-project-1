@@ -91,12 +91,14 @@ To develop a complete multi-vendor marketplace where:
 
 ### ⚙️ Backend Architecture
 
-* Separate Node.js server directory.
-* Organized backend source structure.
-* API integration through Axios.
-* Environment variable configuration.
-* Backend development and production scripts.
-* Database seeding script.
+* RESTful API built with Express.js and Node.js.
+* MongoDB & Mongoose data modeling with automatic embedded memory failover (`mongodb-memory-server`).
+* JWT authentication with bcrypt password hashing and role-based access control (`admin`, `vendor`, `customer`).
+* Security headers (`helmet`), request logging (`morgan`), and API rate limiting (`express-rate-limit`).
+* Interactive server dashboard and live status view at `http://localhost:5000/`.
+* Centralized health check endpoint at `GET /api/health`.
+* Database seeding script with automatic initialization (`npm run server:seed`).
+* Automated End-to-End API test suite (`node server/test_e2e.js`).
 
 ---
 
@@ -304,11 +306,9 @@ npm run dev
 
 ### 9. Open in Browser
 
-Vite will provide a local development URL, generally:
-
-```text
-http://localhost:5173
-```
+* **Storefront (Vite):** `http://localhost:5173` (or `http://localhost:5174`)
+* **Backend API & Server Dashboard:** `http://localhost:5000`
+* **Backend Health Check:** `http://localhost:5000/api/health`
 
 ---
 
@@ -322,6 +322,30 @@ SwiftCart aims to provide a consistent shopping experience across different scre
 | Laptop  | Optimized shopping interface           |
 | Tablet  | Adaptive product grids                 |
 | Mobile  | Mobile-friendly navigation and layouts |
+
+---
+
+## 📡 Backend API Reference
+
+The backend API server operates on port `5000` (`http://localhost:5000/api`).
+
+| Method | Endpoint | Description | Auth / Access |
+|---|---|---|---|
+| `GET` | `/api/health` | Service uptime and MongoDB connection health | Public |
+| `POST` | `/api/auth/signup` | Register a new user account | Public |
+| `POST` | `/api/auth/login` | Authenticate customer or administrator and return JWT | Public |
+| `GET` | `/api/auth/me` | Fetch currently authenticated user profile | Bearer Token |
+| `PUT` | `/api/auth/profile` | Update user name and contact phone number | Bearer Token |
+| `GET` | `/api/products` | Retrieve product catalog with search, sort, & categories | Public |
+| `GET` | `/api/products/:id` | Retrieve single product details | Public |
+| `GET` | `/api/categories` | Retrieve all marketplace product categories | Public |
+| `POST` | `/api/orders` | Create an order with shipping details & payment method | Bearer Token |
+| `GET` | `/api/orders/my-orders` | Retrieve authenticated customer's order history | Bearer Token |
+| `POST` | `/api/sellers/apply` | Submit an independent seller onboarding application | Public |
+| `GET` | `/api/sellers/applications` | Review pending vendor applications | Admin |
+| `PATCH` | `/api/sellers/applications/:id/status` | Approve or reject a vendor application | Admin |
+| `GET` | `/api/admin/stats` | Real-time marketplace statistics (revenue, orders, items) | Admin |
+| `GET` | `/api/admin/users` | View and manage registered users and roles | Admin |
 
 ---
 
@@ -347,8 +371,8 @@ SwiftCart is being developed in phases to gradually evolve into a complete multi
 * [x] Authentication state management
 * [x] Protected route structure
 * [x] Profile interface
-* [ ] Complete backend authentication verification
-* [ ] Secure session management
+* [x] Complete backend authentication verification (JWT + bcrypt)
+* [x] Secure session management (/api/auth/me token verification)
 
 ### Phase 3 — Backend Integration
 
@@ -357,44 +381,44 @@ SwiftCart is being developed in phases to gradually evolve into a complete multi
 * [x] API service integration structure
 * [x] Environment configuration template
 * [x] Database seeding script
-* [ ] Complete API validation and testing
-* [ ] Production security configuration
+* [x] Complete API validation and testing (test_e2e.js suite)
+* [x] Production security configuration (Helmet, Morgan, express-rate-limit)
 
 ### Phase 4 — Vendor Management
 
-* [ ] Vendor registration and approval
-* [ ] Vendor dashboard
+* [x] Vendor registration and application submission (/api/sellers/apply)
+* [x] Vendor approval workflow in admin dashboard
+* [ ] Dedicated vendor self-service portal
 * [ ] Add, edit, and delete products
 * [ ] Product image uploads
 * [ ] Inventory management
-* [ ] Vendor-specific order management
 
 ### Phase 5 — Admin Management
 
 * [x] Admin dashboard interface
 * [x] Dedicated admin page structure
-* [ ] Customer management
-* [ ] Vendor approval and management
-* [ ] Product and category management
-* [ ] Marketplace analytics
+* [x] Live marketplace analytics (/api/admin/stats)
+* [x] Vendor approval and application review
+* [x] Real-time product catalog synchronization
+* [ ] Advanced customer management
 
 ### Phase 6 — Orders & Payments
 
-* [ ] Secure checkout
-* [ ] Address management
-* [ ] Order creation
+* [x] Interactive checkout modal (COD and UPI options)
+* [x] Address selection and management
+* [x] Order creation via backend (/api/orders)
+* [x] Customer order history (/api/orders/my-orders)
+* [ ] Production payment gateway integration
 * [ ] Vendor-wise order splitting
-* [ ] Payment gateway integration
-* [ ] Order tracking
-* [ ] Order history
+* [ ] Real-time courier API tracking
 
 ### Phase 7 — Production Readiness
 
-* [ ] Complete database integration
-* [ ] Backend validation
-* [ ] Security testing
+* [x] Complete database integration (MongoDB & Mongoose with memory failover)
+* [x] Backend validation and automated E2E testing
+* [x] Security hardening (Rate limiters, Helmet, JWT)
 * [ ] Performance optimization
-* [ ] Deployment and monitoring
+* [ ] Production cloud deployment and monitoring
 
 ---
 
